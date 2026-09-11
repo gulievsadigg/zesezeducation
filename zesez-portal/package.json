@@ -1,0 +1,11 @@
+{
+  "name": "zesez-education-portal",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node api/index.js"
+  },
+  "dependencies": {
+    "stripe": "^16.0.0"
+  }
+}
