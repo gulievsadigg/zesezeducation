@@ -135,7 +135,8 @@
           <button class="tab-btn active" onclick="switchAdminTab('pane-leads', this)">📋 Müraciətlər</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-companies', this)">🏢 Şirkətlər</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-students', this)">🎓 Tələbələr</button>
-          <button class="tab-btn" onclick="switchAdminTab('pane-pricing', this)">💳 Qiymət Tənzimləməsi</button>
+          <button class="tab-btn" onclick="switchAdminTab('pane-packages', this)">💳 Xidmət Paketləri</button>
+          <button class="tab-btn" onclick="switchAdminTab('pane-docservices', this)">🌍 Sənədləşmə Xidmətləri</button>
         </nav>
 
         <main>
@@ -169,17 +170,34 @@
             </div>
           </div>
 
-          <div id="pane-pricing" class="admin-pane card">
-            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 6px;">💳 Qlobal Qiymət Tənzimləməsi</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px;">Bu dəyərlər Firestore-da saxlanılır. Mağaza kartlarına birbaşa bağlamaq üçün əlavə inteqrasiya tələb olunur.</p>
-            <form onsubmit="savePricing(event)">
-              <div class="field-wrap"><label>Depozit Məbləği (EUR)</label><input type="number" id="price-deposit" class="field-input"></div>
-              <div class="field-wrap"><label>Tam Qəbul Dəstəyi Paketi (AZN)</label><input type="number" id="price-admission" class="field-input"></div>
-              <div class="field-wrap"><label>Viza Dəstəyi Paketi (AZN)</label><input type="number" id="price-visa" class="field-input"></div>
-              <div class="field-wrap"><label>All-Inclusive VIP Paket (AZN)</label><input type="number" id="price-allinclusive" class="field-input"></div>
-              <button type="submit" class="btn-primary">Yadda Saxla</button>
-              <div id="pricing-status" class="status-msg"></div>
+          <div id="pane-packages" class="admin-pane card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 6px;">💳 Xidmət Paketləri</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px;">
+              Burada dəyişdiyiniz ad/təsvir/qiymət həm saytda göstərilir, həm də Stripe ödənişində faktiki tutulan
+              məbləğ kimi istifadə olunur (server tərəfdə Firestore-dan oxunur — müştəri qiyməti dəyişə bilməz).
+              Qiymət dəyişikliyi Stripe-a keçmək üçün <code>FIREBASE_SERVICE_ACCOUNT_KEY</code> mühit dəyişənini
+              Vercel-də təyin etməlisiniz (bax: firebase-config.js təlimatları).
+            </p>
+            <div id="packages-editor"></div>
+            <div id="packages-status" class="status-msg"></div>
+          </div>
+
+          <div id="pane-docservices" class="admin-pane card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 6px;">🌍 Avropada Daxili Sənədləşmə Xidmətləri</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px;">
+              Yeni ölkə əlavə etmək üçün sadəcə aşağıdakı formada yeni bir ölkə açarı (məs: <code>czech</code>) və
+              bayraqlı ad (məs: <code>🇨🇿 Çexiya</code>) yazın — saytda avtomatik yeni tab kimi görünəcək.
+            </p>
+            <form onsubmit="handleAddDocService(event)" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; align-items: end; margin-bottom: 22px;">
+              <div class="field-wrap" style="margin-bottom: 0;"><label>Ölkə Açarı</label><input type="text" id="ds-country-key" required class="field-input" placeholder="germany"></div>
+              <div class="field-wrap" style="margin-bottom: 0;"><label>Ölkə Adı (bayraqlı)</label><input type="text" id="ds-country-label" required class="field-input" placeholder="🇩🇪 Almaniya"></div>
+              <div class="field-wrap" style="margin-bottom: 0;"><label>Xidmət Adı</label><input type="text" id="ds-name" required class="field-input" placeholder="Anmeldung"></div>
+              <div class="field-wrap" style="margin-bottom: 0;"><label>Açıqlama</label><input type="text" id="ds-desc" class="field-input" placeholder="Qısa izah"></div>
+              <div class="field-wrap" style="margin-bottom: 0;"><label>Qiymət (AZN)</label><input type="number" id="ds-price" required class="field-input" placeholder="120"></div>
+              <button type="submit" class="btn-primary" style="height: 46px;">Əlavə Et</button>
             </form>
+            <div id="docservices-status" class="status-msg"></div>
+            <div id="docservices-list"></div>
           </div>
         </main>
       </div>
@@ -279,37 +297,107 @@
       }
     }
 
-    async function loadPricing() {
+    // ---- Xidmət Paketləri (packages/{id}) ----
+    const PACKAGE_DEFS = [
+      { id: 'all_inclusive', label: 'All-Inclusive VIP Paket', defaultName: 'Zesez All-Inclusive VIP Paket', defaultPrice: 1400 },
+      { id: 'admission', label: 'Tam Qəbul Dəstəyi', defaultName: 'Tam Qəbul Dəstəyi', defaultPrice: 900 },
+      { id: 'visa', label: 'Tələbə Viza Dəstəyi', defaultName: 'Tələbə Viza Dəstəyi', defaultPrice: 400 },
+      { id: 'atlas_one_time', label: 'Universitet Atlası (birdəfəlik)', defaultName: 'Universitet Atlası', defaultPrice: 19 },
+      { id: 'zesez_standard_sub', label: 'Zesez Standard (aylıq abunəlik)', defaultName: 'Zesez Standard', defaultPrice: 35 },
+      { id: 'zesez_pro_vip_sub', label: 'Zesez PRO VIP (aylıq abunəlik)', defaultName: 'Zesez PRO VIP', defaultPrice: 59 }
+    ];
+
+    async function loadPackagesEditor() {
       const db = window.ZesezAuth.db;
-      try {
-        const snap = await db.collection('pricing_config').doc('main').get();
-        const d = snap.exists ? snap.data() : {};
-        document.getElementById('price-deposit').value = d.depositEUR || '';
-        document.getElementById('price-admission').value = d.admissionAZN || '';
-        document.getElementById('price-visa').value = d.visaAZN || '';
-        document.getElementById('price-allinclusive').value = d.allInclusiveAZN || '';
-      } catch (err) { /* ignore, leave blank */ }
+      const editor = document.getElementById('packages-editor');
+      editor.innerHTML = '';
+      for (const def of PACKAGE_DEFS) {
+        let data = { name: def.defaultName, desc: '', priceAZN: def.defaultPrice };
+        try {
+          const snap = await db.collection('packages').doc(def.id).get();
+          if (snap.exists) data = Object.assign(data, snap.data());
+        } catch (err) { /* keep defaults */ }
+        const row = document.createElement('div');
+        row.style.cssText = 'border: 1px solid var(--border-color); border-radius: 12px; padding: 16px; margin-bottom: 14px;';
+        row.innerHTML =
+          '<div style="font-weight:800;color:var(--primary-dark-blue);margin-bottom:10px;font-size:0.9rem;">' + def.label + '</div>' +
+          '<div class="field-wrap" style="margin-bottom:8px;"><label>Ad</label><input type="text" class="field-input pkg-name" value="' + (data.name || '').replace(/"/g, '&quot;') + '"></div>' +
+          '<div class="field-wrap" style="margin-bottom:8px;"><label>Açıqlama</label><input type="text" class="field-input pkg-desc" value="' + (data.desc || '').replace(/"/g, '&quot;') + '"></div>' +
+          '<div class="field-wrap" style="margin-bottom:10px;"><label>Qiymət (AZN)</label><input type="number" class="field-input pkg-price" value="' + (data.priceAZN || 0) + '"></div>' +
+          '<button type="button" class="btn-primary" style="padding:9px 20px;font-size:0.85rem;" onclick="savePackage(\'' + def.id + '\', this)">Yadda Saxla</button>';
+        editor.appendChild(row);
+      }
     }
 
-    async function savePricing(e) {
+    async function savePackage(id, btn) {
+      const row = btn.parentElement;
+      const name = row.querySelector('.pkg-name').value.trim();
+      const desc = row.querySelector('.pkg-desc').value.trim();
+      const priceAZN = Number(row.querySelector('.pkg-price').value) || 0;
+      const db = window.ZesezAuth.db;
+      try {
+        await db.collection('packages').doc(id).set({ name, desc, priceAZN, updatedAt: window.ZesezAuth.serverTimestamp() }, { merge: true });
+        showStatus('packages-status', '✅ "' + name + '" yadda saxlanıldı!', true);
+      } catch (err) {
+        showStatus('packages-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+      }
+    }
+
+    function showStatus(elId, msg, ok) {
+      const el = document.getElementById(elId);
+      el.innerText = msg;
+      el.className = 'status-msg ' + (ok ? 'ok' : 'err');
+      el.style.display = 'block';
+      setTimeout(function () { el.style.display = 'none'; }, 4000);
+    }
+
+    // ---- Sənədləşmə Xidmətləri (doc_services/{id}) ----
+    async function loadDocServicesAdmin() {
+      const db = window.ZesezAuth.db;
+      const container = document.getElementById('docservices-list');
+      try {
+        const snap = await db.collection('doc_services').orderBy('order', 'asc').get();
+        if (snap.empty) { container.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);">Hələ heç bir xidmət əlavə edilməyib.</p>'; return; }
+        container.innerHTML = '<div style="overflow-x:auto;"><table><thead><tr><th>Ölkə</th><th>Xidmət</th><th>Açıqlama</th><th>Qiymət (AZN)</th><th></th></tr></thead><tbody>' +
+          snap.docs.map(function (d) {
+            const x = d.data();
+            return '<tr><td>' + (x.countryLabel || x.country) + '</td><td>' + x.name + '</td><td>' + (x.desc || '-') + '</td><td>' + x.priceAZN + '</td>' +
+              '<td><button onclick="deleteDocService(\'' + d.id + '\')" style="background:#FEE2E2;color:#DC2626;border:none;padding:6px 12px;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.78rem;">Sil</button></td></tr>';
+          }).join('') + '</tbody></table></div>';
+      } catch (err) {
+        container.innerHTML = '<p style="font-size:0.85rem;color:#B91C1C;">Yüklənmə xətası: ' + window.ZesezAuth.friendlyError(err) + '</p>';
+      }
+    }
+
+    async function handleAddDocService(e) {
       e.preventDefault();
       const db = window.ZesezAuth.db;
       const data = {
-        depositEUR: Number(document.getElementById('price-deposit').value) || 0,
-        admissionAZN: Number(document.getElementById('price-admission').value) || 0,
-        visaAZN: Number(document.getElementById('price-visa').value) || 0,
-        allInclusiveAZN: Number(document.getElementById('price-allinclusive').value) || 0,
-        updatedAt: window.ZesezAuth.serverTimestamp()
+        country: document.getElementById('ds-country-key').value.trim().toLowerCase(),
+        countryLabel: document.getElementById('ds-country-label').value.trim(),
+        name: document.getElementById('ds-name').value.trim(),
+        desc: document.getElementById('ds-desc').value.trim(),
+        priceAZN: Number(document.getElementById('ds-price').value) || 0,
+        order: Date.now(),
+        createdAt: window.ZesezAuth.serverTimestamp()
       };
       try {
-        await db.collection('pricing_config').doc('main').set(data, { merge: true });
-        const box = document.getElementById('pricing-status');
-        box.innerText = '✅ Qiymətlər yadda saxlanıldı!';
-        box.className = 'status-msg ok';
+        await db.collection('doc_services').add(data);
+        ['ds-country-key', 'ds-country-label', 'ds-name', 'ds-desc', 'ds-price'].forEach(function (id) { document.getElementById(id).value = ''; });
+        showStatus('docservices-status', '✅ Xidmət əlavə olundu!', true);
+        loadDocServicesAdmin();
       } catch (err) {
-        const box = document.getElementById('pricing-status');
-        box.innerText = '❌ ' + window.ZesezAuth.friendlyError(err);
-        box.className = 'status-msg err';
+        showStatus('docservices-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+      }
+    }
+
+    async function deleteDocService(id) {
+      const db = window.ZesezAuth.db;
+      try {
+        await db.collection('doc_services').doc(id).delete();
+        loadDocServicesAdmin();
+      } catch (err) {
+        showStatus('docservices-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
       }
     }
 
@@ -328,7 +416,8 @@
       loadLeads();
       loadCompanies();
       loadStudents();
-      loadPricing();
+      loadPackagesEditor();
+      loadDocServicesAdmin();
     });
   </script>
 </body>

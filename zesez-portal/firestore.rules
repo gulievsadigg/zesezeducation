@@ -57,5 +57,22 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    // Xidmət paketləri (All-Inclusive/Qəbul/Viza + abunəlik pilləkənləri) —
+    // saytda hamı görür, qiyməti/adı yalnız admin dəyişir. Stripe checkout
+    // da (api/create-checkout-session.js) authoritative qiyməti bu
+    // kolleksiyadan oxuyur ki, müştəri qiyməti dəyişə bilməsin.
+    match /packages/{pkgId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Ölkə üzrə daxili sənədləşmə xidmətləri — admin istənilən ölkəni/
+    // xidməti əlavə edə, qiymətini dəyişə, silə bilər; sayt üzərində hamı
+    // görür.
+    match /doc_services/{itemId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
   }
 }

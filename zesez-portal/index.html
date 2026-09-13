@@ -439,6 +439,28 @@
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     }
 
+    /* Autocomplete (university / major suggestions) */
+    .autocomplete-wrap { position: relative; }
+    .autocomplete-list {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      margin-top: 4px;
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      max-height: 240px;
+      overflow-y: auto;
+      box-shadow: var(--shadow-md);
+      z-index: 200;
+      text-align: left;
+    }
+    .autocomplete-item { padding: 10px 14px; font-size: 0.88rem; font-weight: 600; cursor: pointer; }
+    .autocomplete-item .ac-sub { font-size: 0.74rem; color: var(--text-muted); font-weight: 500; }
+    .autocomplete-item:hover, .autocomplete-item.active { background: var(--accent-soft-blue); }
+
     /* Country Checkbox Selector with Clean Custom Dropdown */
     .country-selector-box {
       background: var(--bg-light);
@@ -1245,13 +1267,12 @@
       <a href="#packages-section">Paketlər & Qiymətlər</a>
       <a href="#country-doc-section">Daxili Sənədləşmə</a>
       <a href="#courses-section">Dil Kursları & Müəllimlər</a>
-      <a href="/dashboard.html">🎓 Kabinetim</a>
-      <a href="/partner.html">🏢 Şirkət Girişi</a>
     </nav>
 
     <div style="display: flex; align-items: center; gap: 12px;">
       <div id="auth-header-area"></div>
-      <a href="javascript:void(0)" onclick="openModal('Ümumi Müraciət')" class="header-btn">Müraciət Et</a>
+      <a href="/dashboard.html" class="btn-blue-outline" style="padding: 9px 20px; font-size: 0.85rem;">🎓 Kabinetim</a>
+      <a href="/partner.html" class="header-btn">🏢 Şirkət Girişi</a>
     </div>
   </header>
 
@@ -1360,7 +1381,10 @@
         <!-- Current University -->
         <div class="field-box">
           <label>Bitirdiyiniz / Cari Təhsil Müəssisəsi</label>
-          <input type="text" id="uni-input" class="input-style" placeholder="Məs: BDU, UNEC, BANM, ADNSU, ADA...">
+          <div class="autocomplete-wrap">
+            <input type="text" id="uni-input" class="input-style" placeholder="Yazın, məs: Baku State..." autocomplete="off">
+            <div class="autocomplete-list" id="uni-input-list"></div>
+          </div>
         </div>
 
         <!-- GPA -->
@@ -1414,12 +1438,10 @@
         <!-- Target Field -->
         <div class="field-box">
           <label>Hədəf İxtisas Sahəsi</label>
-          <select id="field-select" class="input-style">
-            <option value="it">İnformasiya Texnologiyaları & Kompüter Elmləri</option>
-            <option value="business">Biznes, Maliyyə & Menecment</option>
-            <option value="engineering">Mühəndislik & Texnologiya</option>
-            <option value="humanities">Beynəlxalq Münasibətlər & Humanitar</option>
-          </select>
+          <div class="autocomplete-wrap">
+            <input type="text" id="field-select" class="input-style" placeholder="Yazın, məs: Kompüter Mühəndisliyi" autocomplete="off">
+            <div class="autocomplete-list" id="field-select-list"></div>
+          </div>
         </div>
       </div>
 
@@ -1495,15 +1517,15 @@
                 <div>
                   <div class="plan-name">Universitet Atlası</div>
                   <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Sadəcə bütün universitetləri və detalları dərhal görmək istəyənlər üçün.</p>
-                  <div class="plan-price">19 ₼ <span>/ birdəfəlik</span></div>
+                  <div class="plan-price"><span id="tier-atlas-price">19 ₼</span> <span>/ birdəfəlik</span></div>
                   <ul class="plan-perks">
                     <li><span class="check">✓</span> <strong>Bütün 10 universitetin</strong> tam siyahısı</li>
                     <li><span class="check">✓</span> Dəqiq deadline və sənəd qəbul tarixləri</li>
                     <li><span class="check">✓</span> Təqaüd və ödənişsiz dövlət proqramları filtri</li>
                   </ul>
                 </div>
-                <button onclick="openModalWithPackage('Universitet Atlası (19 AZN)', 'atlas_one_time')" class="btn-blue-outline" style="width: 100%; justify-content: center;">
-                  Kilidi Aç (19 AZN)
+                <button onclick="openModalWithPackage('Universitet Atlası', 'atlas_one_time')" class="btn-blue-outline" style="width: 100%; justify-content: center;">
+                  Kilidi Aç (<span id="tier-atlas-btn-price">19 AZN</span>)
                 </button>
               </div>
 
@@ -1512,15 +1534,15 @@
                 <div>
                   <div class="plan-name">Zesez Standard</div>
                   <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Universitet axtaran və müraciət tarixlərini qaçırmaq istəməyənlər üçün.</p>
-                  <div class="plan-price">35 ₼ <span>/ aylıq</span></div>
+                  <div class="plan-price"><span id="tier-standard-price">35 ₼</span> <span>/ aylıq</span></div>
                   <ul class="plan-perks">
                     <li><span class="check">✓</span> <strong>Bütün 10 universitetin</strong> kilidinin açılması</li>
                     <li><span class="check">✓</span> <strong>Ağıllı Email Bildiriş:</strong> İxtisasına uyğun sistem açılan kimi xəbərdarlıq</li>
                     <li><span class="check">✓</span> Sənədlərin ilkin yoxlanış yaddaş kartı</li>
                   </ul>
                 </div>
-                <button onclick="openModalWithPackage('Zesez Standard (35 AZN)', 'zesez_standard_sub')" class="btn-blue-outline" style="width: 100%; justify-content: center;">
-                  Standard Abunəlik (35 AZN)
+                <button onclick="openModalWithPackage('Zesez Standard', 'zesez_standard_sub')" class="btn-blue-outline" style="width: 100%; justify-content: center;">
+                  Standard Abunəlik (<span id="tier-standard-btn-price">35 AZN</span>)
                 </button>
               </div>
 
@@ -1530,7 +1552,7 @@
                 <div>
                   <div class="plan-name">Zesez PRO VIP</div>
                   <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">Tələbəyə qəbul prosesində tam zəmanət və üstünlük verən ən güclü paket.</p>
-                  <div class="plan-price">59 ₼ <span>/ aylıq</span></div>
+                  <div class="plan-price"><span id="tier-provip-price">59 ₼</span> <span>/ aylıq</span></div>
                   <ul class="plan-perks">
                     <li><span class="check">✓</span> <strong>Bütün 10 universitetin</strong> kilidinin açılması</li>
                     <li><span class="check">✓</span> <strong>1 Pulsuz Canlı Zoom Konsultasiyası</strong> (Təhsil eksperti ilə)</li>
@@ -1538,8 +1560,8 @@
                     <li><span class="check">✓</span> <strong>Fərdi WhatsApp Bildiriş Xətti:</strong> Deadline xəbərdarlıqları</li>
                   </ul>
                 </div>
-                <button onclick="openModalWithPackage('Zesez PRO VIP (59 AZN)', 'zesez_pro_vip_sub')" class="btn-orange-lg" style="width: 100%;">
-                  PRO VIP Başlat (59 AZN)
+                <button onclick="openModalWithPackage('Zesez PRO VIP', 'zesez_pro_vip_sub')" class="btn-orange-lg" style="width: 100%;">
+                  PRO VIP Başlat (<span id="tier-provip-btn-price">59 AZN</span>)
                 </button>
               </div>
             </div>
@@ -1620,36 +1642,9 @@
       <p class="section-subtitle">İstər hər şeyi əhatə edən böyük VIP paketimizi, istərsə də yalnız sizə lazım olan fərdi xidmətləri sərbəst seçin.</p>
     </div>
 
-    <div class="packages-main-grid">
-      <!-- 1. All-Inclusive VIP Package -->
-      <div id="card-all-inclusive" class="package-card" onclick="togglePackage('all_inclusive', 1400)">
-        <input type="checkbox" id="check-all-inclusive" class="pkg-check-input">
-        <span class="pkg-badge-pill">👑 HƏR ŞEY DAXİL VIP PAKET</span>
-        <div class="pkg-icon-wrap">🌟</div>
-        <div class="pkg-title">Zesez All-Inclusive VIP Paket</div>
-        <div class="pkg-desc">Tam Qəbul Dəstəyi + Tələbə Viza Dəstəyi + Xaricdə İlkin Yerləşmə məsləhəti + Şəxsi Təhsil Kuratoru. Tələbənin A-dan Z-yə bütün prosesi rəsmiləşdirilir.</div>
-        <div class="pkg-price-tag">1,400 ₼</div>
-      </div>
-
-      <!-- 2. Full Admission Only -->
-      <div id="card-admission" class="package-card checked-pkg" onclick="togglePackage('admission', 900)">
-        <input type="checkbox" id="check-admission" class="pkg-check-input" checked>
-        <div class="pkg-icon-wrap">🎓</div>
-        <div class="pkg-title">Tam Qəbul Dəstəyi</div>
-        <div class="pkg-desc">Universitet və ixtisas seçimi, professional motivasiya məktubu və CV yazılması, sənədlərin rəsmi tərcüməsi və apostil təsdiqi, 3 universitetə rəsmi müraciət.</div>
-        <div class="pkg-price-tag">900 ₼</div>
-        <div id="admission-disabled-note" class="pkg-note-disabled">⚠️ All-Inclusive VIP paketi seçildiyi üçün bu xidmət artıq daxildir!</div>
-      </div>
-
-      <!-- 3. Visa Support Only -->
-      <div id="card-visa" class="package-card" onclick="togglePackage('visa', 400)">
-        <input type="checkbox" id="check-visa" class="pkg-check-input">
-        <div class="pkg-icon-wrap">🛂</div>
-        <div class="pkg-title">Tələbə Viza Dəstəyi</div>
-        <div class="pkg-desc">Qəbulunu özü almış tələbələr üçün: Səfirlik anketlərinin doldurulması, bloklanmış hesab/maliyyə təminatı təlimatı, viza motivasiyası və səfirlik müsahibəsi simulyasiyası.</div>
-        <div class="pkg-price-tag">400 ₼</div>
-        <div id="visa-disabled-note" class="pkg-note-disabled">⚠️ All-Inclusive VIP paketi seçildiyi üçün bu xidmət artıq daxildir!</div>
-      </div>
+    <!-- Package cards are loaded dynamically from Firestore (admin-managed) -->
+    <div class="packages-main-grid" id="packages-main-grid">
+      <span style="font-size: 0.85rem; color: var(--text-muted);">Paketlər yüklənir...</span>
     </div>
   </section>
 
@@ -1663,15 +1658,9 @@
           <p style="font-size: 0.88rem; color: var(--text-muted);">Gedəcəyiniz ölkəni seçin və oradakı konkret ehtiyacınız olan xidmətləri tək-tək işarələyin:</p>
         </div>
 
-        <!-- Country Tabs including Latvia and Lithuania -->
-        <div class="country-tab-buttons">
-          <button class="country-tab-btn active-tab" onclick="switchDocCountry('germany', this)">🇩🇪 Almaniya</button>
-          <button class="country-tab-btn" onclick="switchDocCountry('italy', this)">🇮🇹 İtaliya</button>
-          <button class="country-tab-btn" onclick="switchDocCountry('poland', this)">🇵🇱 Polşa</button>
-          <button class="country-tab-btn" onclick="switchDocCountry('hungary', this)">🇭🇺 Macarıstan</button>
-          <button class="country-tab-btn" onclick="switchDocCountry('austria', this)">🇦🇹 Avstriya</button>
-          <button class="country-tab-btn" onclick="switchDocCountry('latvia', this)">🇱🇻 Latviya</button>
-          <button class="country-tab-btn" onclick="switchDocCountry('lithuania', this)">🇱🇹 Litva</button>
+        <!-- Country tabs are loaded dynamically from Firestore (admin-managed) -->
+        <div class="country-tab-buttons" id="country-tab-buttons">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Yüklənir...</span>
         </div>
       </div>
 
@@ -2025,6 +2014,113 @@
       }
     }
 
+    // 3.5 Autocomplete: university name (live, via free Hipolabs API proxy)
+    // and target major/specialty (curated world-majors list)
+    const WORLD_MAJORS = [
+      'Kompüter Mühəndisliyi', 'Kompüter Elmləri', 'Süni İntellekt və Data Elmi', 'İnformasiya Texnologiyaları',
+      'Proqram Mühəndisliyi', 'Kibertəhlükəsizlik', 'Elektrik və Elektronika Mühəndisliyi', 'Mexanika Mühəndisliyi',
+      'İnşaat Mühəndisliyi', 'Kimya Mühəndisliyi', 'Neft-Qaz Mühəndisliyi', 'Aerokosmik Mühəndislik',
+      'Biotexnologiya', 'Biotibbi Mühəndislik', 'Robototexnika', 'Materialşünaslıq Mühəndisliyi',
+      'İqtisadiyyat', 'Biznesin İdarə Edilməsi (MBA)', 'Maliyyə', 'Mühasibatlıq', 'Marketinq', 'Menecment',
+      'Beynəlxalq Ticarət', 'Logistika və Təchizat Zənciri', 'Sahibkarlıq', 'Bank İşi',
+      'Hüquq', 'Beynəlxalq Hüquq', 'Beynəlxalq Münasibətlər', 'Siyasi Elmlər', 'Diplomatiya',
+      'Tibb (Həkimlik)', 'Diş Həkimliyi', 'Əczaçılıq', 'Tibb Bacılığı (Nursing)', 'İctimai Səhiyyə',
+      'Psixologiya', 'Sosiologiya', 'Sosial İş', 'Pedaqogika', 'Erkən Yaş Təhsili',
+      'Memarlıq', 'Şəhərsalma və Regional Planlaşdırma', 'Qrafik Dizayn', 'Sənaye Dizaynı', 'İncəsənət',
+      'Jurnalistika', 'Kütləvi Kommunikasiya', 'Media və Rabitə', 'Film və Televiziya İstehsalı',
+      'Turizm və Otelçilik İdarəçiliyi', 'Aşpazlıq Sənəti (Culinary Arts)',
+      'Kənd Təsərrüfatı Elmləri', 'Ətraf Mühit Mühəndisliyi', 'Ekologiya', 'Dənizçilik Mühəndisliyi',
+      'Riyaziyyat', 'Fizika', 'Kimya (Elm)', 'Biologiya', 'Astronomiya', 'Geologiya',
+      'Tarix', 'Fəlsəfə', 'Dilçilik', 'Ədəbiyyat', 'Tərcüməşünaslıq',
+      'İdman Elmləri', 'Fizioterapiya', 'Qidalanma və Dietologiya', 'Baytarlıq',
+      'Aviasiya və Uçuş İdarəçiliyi', 'Dəniz Nəqliyyatı Mühəndisliyi', 'Nəqliyyat Mühəndisliyi',
+      'Data Analitikası', 'İş Analitikası (Business Analytics)', 'Oyun Dizaynı (Game Design)',
+      'Musiqi', 'Teatr Sənəti', 'Rəqs'
+    ];
+
+    function setupAutocomplete(inputId, listId, getSuggestions) {
+      const input = document.getElementById(inputId);
+      const list = document.getElementById(listId);
+      if (!input || !list) return;
+      let activeIndex = -1;
+      let currentItems = [];
+      let debounceTimer = null;
+
+      function render(items) {
+        currentItems = items;
+        activeIndex = -1;
+        if (!items.length) { list.style.display = 'none'; list.innerHTML = ''; return; }
+        list.innerHTML = items.map(function (it, i) {
+          return '<div class="autocomplete-item" data-index="' + i + '">' + it.label +
+            (it.sub ? '<div class="ac-sub">' + it.sub + '</div>' : '') + '</div>';
+        }).join('');
+        list.style.display = 'block';
+        Array.prototype.forEach.call(list.children, function (el, i) {
+          el.addEventListener('mousedown', function (e) { e.preventDefault(); selectItem(i); });
+        });
+      }
+
+      function selectItem(i) {
+        const it = currentItems[i];
+        if (!it) return;
+        input.value = it.value;
+        list.style.display = 'none';
+      }
+
+      function updateActive() {
+        Array.prototype.forEach.call(list.children, function (el, i) {
+          el.classList.toggle('active', i === activeIndex);
+        });
+      }
+
+      input.addEventListener('input', function () {
+        clearTimeout(debounceTimer);
+        const q = input.value.trim();
+        if (q.length < 2) { list.style.display = 'none'; return; }
+        debounceTimer = setTimeout(function () {
+          Promise.resolve(getSuggestions(q)).then(render);
+        }, 250);
+      });
+
+      input.addEventListener('keydown', function (e) {
+        if (list.style.display !== 'block') return;
+        if (e.key === 'ArrowDown') {
+          e.preventDefault();
+          activeIndex = Math.min(activeIndex + 1, currentItems.length - 1);
+          updateActive();
+        } else if (e.key === 'ArrowUp') {
+          e.preventDefault();
+          activeIndex = Math.max(activeIndex - 1, 0);
+          updateActive();
+        } else if (e.key === 'Enter') {
+          if (activeIndex >= 0) { e.preventDefault(); selectItem(activeIndex); }
+        } else if (e.key === 'Escape') {
+          list.style.display = 'none';
+        }
+      });
+
+      document.addEventListener('click', function (e) {
+        if (!e.target.closest('#' + inputId) && !e.target.closest('#' + listId)) {
+          list.style.display = 'none';
+        }
+      });
+    }
+
+    setupAutocomplete('uni-input', 'uni-input-list', async function (q) {
+      try {
+        const res = await fetch('/api/universities?name=' + encodeURIComponent(q));
+        const data = await res.json();
+        return data.map(function (u) { return { label: u.name, sub: u.country, value: u.name }; });
+      } catch (e) { return []; }
+    });
+
+    setupAutocomplete('field-select', 'field-select-list', function (q) {
+      const qLower = q.toLowerCase();
+      return WORLD_MAJORS.filter(function (m) { return m.toLowerCase().indexOf(qLower) !== -1; })
+        .slice(0, 10)
+        .map(function (m) { return { label: m, value: m }; });
+    });
+
     // 4. Leaflet Europe Map
     let map;
     let markers = [];
@@ -2038,9 +2134,9 @@
         scrollWheelZoom: false
       });
 
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
-        subdomains: 'abcd',
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; OpenStreetMap contributors',
+        subdomains: 'abc',
         maxZoom: 19
       }).addTo(map);
 
@@ -2095,17 +2191,78 @@
       addUniMarker(50.0880, 14.4038, 'Charles University', 'Praqa, Çexiya');
     }
 
-    // 5. STRICT MUTUAL EXCLUSION LOGIC FOR ALL-INCLUSIVE PACKAGE
-    let packagePrices = {
-      all_inclusive: 0,
-      admission: 900,
-      visa: 0
+    // 5. Service packages — name/description/price all admin-managed via
+    // Firestore (see admin.html "Xidmət Paketləri" tab). The mutual-exclusion
+    // logic (All-Inclusive disables the standalone Admission/Visa cards)
+    // stays fixed to these three IDs since Stripe checkout keys off them.
+    let PACKAGE_CATALOG = {
+      all_inclusive: { name: 'Zesez All-Inclusive VIP Paket', desc: '', priceAZN: 1400 },
+      admission: { name: 'Tam Qəbul Dəstəyi', desc: '', priceAZN: 900 },
+      visa: { name: 'Tələbə Viza Dəstəyi', desc: '', priceAZN: 400 }
     };
+    let packagePrices = { all_inclusive: 0, admission: 900, visa: 0 };
 
-    function togglePackage(type, price) {
+    async function loadPackagesFromFirestore() {
+      const grid = document.getElementById('packages-main-grid');
+      const db = window.ZesezAuth && window.ZesezAuth.db;
+      if (db) {
+        try {
+          const ids = ['all_inclusive', 'admission', 'visa', 'atlas_one_time', 'zesez_standard_sub', 'zesez_pro_vip_sub'];
+          const snaps = await Promise.all(ids.map(function (id) { return db.collection('packages').doc(id).get(); }));
+          snaps.forEach(function (snap, i) {
+            if (!snap.exists) return;
+            const id = ids[i];
+            const d = snap.data();
+            if (PACKAGE_CATALOG[id]) {
+              PACKAGE_CATALOG[id] = { name: d.name || PACKAGE_CATALOG[id].name, desc: d.desc || '', priceAZN: d.priceAZN || PACKAGE_CATALOG[id].priceAZN };
+            }
+            const priceEl = document.getElementById('tier-' + id.replace('atlas_one_time', 'atlas').replace('zesez_standard_sub', 'standard').replace('zesez_pro_vip_sub', 'provip') + '-price');
+            const btnPriceEl = document.getElementById('tier-' + id.replace('atlas_one_time', 'atlas').replace('zesez_standard_sub', 'standard').replace('zesez_pro_vip_sub', 'provip') + '-btn-price');
+            if (priceEl && d.priceAZN) priceEl.innerText = d.priceAZN + ' ₼';
+            if (btnPriceEl && d.priceAZN) btnPriceEl.innerText = d.priceAZN + ' AZN';
+          });
+        } catch (err) { /* keep fallback catalog */ }
+      }
+      packagePrices.admission = PACKAGE_CATALOG.admission.priceAZN;
+      renderPackageCards();
+    }
+
+    function renderPackageCards() {
+      const grid = document.getElementById('packages-main-grid');
+      const p = PACKAGE_CATALOG;
+      grid.innerHTML = `
+        <div id="card-all-inclusive" class="package-card" onclick="togglePackage('all_inclusive')">
+          <input type="checkbox" id="check-all-inclusive" class="pkg-check-input">
+          <span class="pkg-badge-pill">👑 HƏR ŞEY DAXİL VIP PAKET</span>
+          <div class="pkg-icon-wrap">🌟</div>
+          <div class="pkg-title">${p.all_inclusive.name}</div>
+          <div class="pkg-desc">${p.all_inclusive.desc || 'Tam Qəbul Dəstəyi + Tələbə Viza Dəstəyi + Xaricdə İlkin Yerləşmə məsləhəti + Şəxsi Təhsil Kuratoru.'}</div>
+          <div class="pkg-price-tag">${p.all_inclusive.priceAZN} ₼</div>
+        </div>
+        <div id="card-admission" class="package-card checked-pkg" onclick="togglePackage('admission')">
+          <input type="checkbox" id="check-admission" class="pkg-check-input" checked>
+          <div class="pkg-icon-wrap">🎓</div>
+          <div class="pkg-title">${p.admission.name}</div>
+          <div class="pkg-desc">${p.admission.desc || 'Universitet və ixtisas seçimi, professional motivasiya məktubu və CV yazılması, sənədlərin rəsmi tərcüməsi və apostil təsdiqi, 3 universitetə rəsmi müraciət.'}</div>
+          <div class="pkg-price-tag">${p.admission.priceAZN} ₼</div>
+          <div id="admission-disabled-note" class="pkg-note-disabled">⚠️ All-Inclusive VIP paketi seçildiyi üçün bu xidmət artıq daxildir!</div>
+        </div>
+        <div id="card-visa" class="package-card" onclick="togglePackage('visa')">
+          <input type="checkbox" id="check-visa" class="pkg-check-input">
+          <div class="pkg-icon-wrap">🛂</div>
+          <div class="pkg-title">${p.visa.name}</div>
+          <div class="pkg-desc">${p.visa.desc || 'Qəbulunu özü almış tələbələr üçün: Səfirlik anketlərinin doldurulması, bloklanmış hesab/maliyyə təminatı təlimatı, viza motivasiyası və səfirlik müsahibəsi simulyasiyası.'}</div>
+          <div class="pkg-price-tag">${p.visa.priceAZN} ₼</div>
+          <div id="visa-disabled-note" class="pkg-note-disabled">⚠️ All-Inclusive VIP paketi seçildiyi üçün bu xidmət artıq daxildir!</div>
+        </div>
+      `;
+    }
+
+    function togglePackage(type) {
+      const price = PACKAGE_CATALOG[type].priceAZN;
       const allIncCard = document.getElementById('card-all-inclusive');
       const allIncCheck = document.getElementById('check-all-inclusive');
-      
+
       const visaCard = document.getElementById('card-visa');
       const visaCheck = document.getElementById('check-visa');
       const visaNote = document.getElementById('visa-disabled-note');
@@ -2168,60 +2325,58 @@
       updateGrandTotal();
     }
 
-    // 6. Extended Country Documentation Data
-    const countryDocs = {
-      germany: [
-        { id: 'de_anm', name: 'Anmeldung (Bələdiyyə Qeydiyyatı)', desc: 'Bürgeramt görüşünün alınması və sənədlərin tərtibi', price: 120 },
-        { id: 'de_ins', name: 'TK / BARMER Dövlət Sığortası', desc: 'Universitet üçün rəsmi elektron sığorta təsdiqi', price: 80 },
-        { id: 'de_blk', name: 'Bloklanmış Hesabın Açılması', desc: 'Fintiba/Expatrio hesabının yerli alman bankına bağlanması', price: 100 },
-        { id: 'de_res', name: 'Aufenthaltstitel (Yaşayış İcazəsi)', desc: 'Ausländerbehörde tələbə kartı müraciəti', price: 180 }
-      ],
-      italy: [
-        { id: 'it_cod', name: 'Codice Fiscale (Vergi Kodu)', desc: 'İtaliya Maliyyə İdarəsindən rəsmi kodun çıxarılması', price: 90 },
-        { id: 'it_perm', name: 'Permesso di Soggiorno (Oturum)', desc: 'Kit Giallo poçt dəsti və polis görüş dəstəyi', price: 180 },
-        { id: 'it_dsu', name: 'DSU / ISEE Parificato Gəlir Sənədləri', desc: '7,500€ təqaüd və yeməkxana güzəşti üçün dosye', price: 150 },
-        { id: 'it_univ', name: 'Universitaly Portal Təsdiqi', desc: 'Səfirlik ön-qeydiyyat faylının tam hazırlanması', price: 100 }
-      ],
-      latvia: [
-        { id: 'lv_aic', name: 'AIC Diplom Təsdiqi (Latviya)', desc: 'Akademik İnformasiya Mərkəzində diplomun rəsmi nostrifikasiyası', price: 130 },
-        { id: 'lv_tua', name: 'TUA Yaşayış İcazəsi (Riqa)', desc: 'PMLP Miqrasiya İdarəsində tələbə yaşayış kartının rəsmiləşdirilməsi', price: 180 },
-        { id: 'lv_sig', name: 'Elektron İmza (eParaksts) Açılması', desc: 'Latviyada bank və dövlət portallarına rahat giriş üçün', price: 70 },
-        { id: 'lv_dorm', name: 'Riqa Yataqxana & Sığorta Dəstəyi', desc: 'Tələbə tibbi sığortası və yaşayış yeri müqaviləsi', price: 90 }
-      ],
-      lithuania: [
-        { id: 'lt_skvc', name: 'SKVC Diplom Təsdiqi (Litva)', desc: 'Litva Təhsildə Keyfiyyəti Qiymətləndirmə Mərkəzi təsdiqi', price: 120 },
-        { id: 'lt_trp', name: 'TRP Tələbə Yaşayış İcazəsi', desc: 'MIGRIS portalında qeydiyyat və miqrasiya kartı dəstəyi', price: 170 },
-        { id: 'lt_decl', name: 'Yaşayış Yeri Bəyanatı (Deklaracija)', desc: 'Vilnüs və Kaunasda bələdiyyə qeydiyyatı', price: 80 }
-      ],
-      poland: [
-        { id: 'pl_pes', name: 'PESEL Nömrəsinin Alınması', desc: 'Polşa dövlət reyestrində rəsmi qeydiyyat', price: 80 },
-        { id: 'pl_kart', name: 'Karta Pobytu (Yaşayış İcazəsi)', desc: 'Voyevodluqda tələbə oturum kartına müraciət faylı', price: 200 },
-        { id: 'pl_ins', name: 'NFZ Dövlət Sığortası', desc: 'Polşa Milli Səhiyyə Fondunda qeydiyyat', price: 70 }
-      ],
-      hungary: [
-        { id: 'hu_taj', name: 'TAJ Kartı & Dövlət Sığortası', desc: 'Macarıstanda tələbə tibbi kartının rəsmiləşdirilməsi', price: 110 },
-        { id: 'hu_res', name: 'Oturum Kartı (White Slip / Card)', desc: 'Miqrasiya idarəsində rəsmi qeydiyyat', price: 150 },
-        { id: 'hu_bnk', name: 'Bank Hesabının Açılması (OTP)', desc: 'Təqaüdün köçürülməsi üçün yerli bank dəstəyi', price: 80 }
-      ],
-      austria: [
-        { id: 'at_mel', name: 'Meldezettel (Yaşayış Qeydiyyatı)', desc: '3 gün ərzində bələdiyyə qeydiyyatının aparılması', price: 110 },
-        { id: 'at_auf', name: 'Aufenthaltsbewilligung Student', desc: 'Avstriya tələbə oturum kartının rəsmi dosyesi', price: 220 },
-        { id: 'at_oeg', name: 'ÖGK Tələbə Sığortası', desc: 'Avstriya dövlət sığortasına qoşulma', price: 80 }
-      ]
-    };
-
+    // 6. Country Documentation Services — loaded from Firestore (admin-managed
+    // in admin.html, so the site owner can add countries/services/prices
+    // without touching code).
+    let DOC_SERVICES_BY_COUNTRY = {};
+    let selectedDocItems = {};
     let selectedDocPrice = 0;
-    let currentDocCountry = 'germany';
+    let currentDocCountry = null;
+
+    async function loadDocServicesFromFirestore() {
+      const tabContainer = document.getElementById('country-tab-buttons');
+      const listContainer = document.getElementById('country-services-display');
+      const db = window.ZesezAuth && window.ZesezAuth.db;
+      if (!db) {
+        tabContainer.innerHTML = '<span style="font-size: 0.85rem; color: var(--text-muted);">Xidmətlər hazırda yüklənə bilmir.</span>';
+        return;
+      }
+      try {
+        const snap = await db.collection('doc_services').orderBy('order', 'asc').get();
+        DOC_SERVICES_BY_COUNTRY = {};
+        snap.forEach(function (doc) {
+          const d = doc.data();
+          const key = d.country;
+          if (!key) return;
+          if (!DOC_SERVICES_BY_COUNTRY[key]) DOC_SERVICES_BY_COUNTRY[key] = { label: d.countryLabel || key, items: [] };
+          DOC_SERVICES_BY_COUNTRY[key].items.push({ id: doc.id, name: d.name, desc: d.desc, price: d.priceAZN || 0 });
+        });
+        const countryKeys = Object.keys(DOC_SERVICES_BY_COUNTRY);
+        if (!countryKeys.length) {
+          tabContainer.innerHTML = '<span style="font-size: 0.85rem; color: var(--text-muted);">Hələ heç bir ölkə xidməti əlavə edilməyib.</span>';
+          listContainer.innerHTML = '';
+          return;
+        }
+        tabContainer.innerHTML = countryKeys.map(function (key, i) {
+          return '<button class="country-tab-btn' + (i === 0 ? ' active-tab' : '') + '" onclick="switchDocCountry(\'' + key + '\', this)">' + DOC_SERVICES_BY_COUNTRY[key].label + '</button>';
+        }).join('');
+        currentDocCountry = countryKeys[0];
+        renderDocServices();
+      } catch (err) {
+        tabContainer.innerHTML = '<span style="font-size: 0.85rem; color: var(--text-muted);">Xidmətlər hazırda yüklənə bilmir.</span>';
+      }
+    }
 
     function renderDocServices() {
       const container = document.getElementById('country-services-display');
-      const list = countryDocs[currentDocCountry];
+      const group = DOC_SERVICES_BY_COUNTRY[currentDocCountry];
       container.innerHTML = '';
-
-      list.forEach(item => {
+      if (!group) return;
+      group.items.forEach(function (item) {
+        const checked = !!selectedDocItems[item.id];
         container.innerHTML += `
-          <div class="doc-check-item" onclick="toggleDocItem(this, ${item.price})">
-            <input type="checkbox" id="${item.id}">
+          <div class="doc-check-item${checked ? ' selected-item' : ''}" onclick="toggleDocItem(this, '${item.id}', ${item.price})">
+            <input type="checkbox" id="${item.id}" ${checked ? 'checked' : ''}>
             <div>
               <div class="doc-info-title">${item.name}</div>
               <div class="doc-info-desc">${item.desc}</div>
@@ -2239,18 +2394,19 @@
       renderDocServices();
     }
 
-    function toggleDocItem(element, price) {
+    function toggleDocItem(element, itemId, price) {
       const checkbox = element.querySelector('input[type="checkbox"]');
       if (event.target !== checkbox) {
         checkbox.checked = !checkbox.checked;
       }
       if (checkbox.checked) {
         element.classList.add('selected-item');
-        selectedDocPrice += price;
+        selectedDocItems[itemId] = price;
       } else {
         element.classList.remove('selected-item');
-        selectedDocPrice -= price;
+        delete selectedDocItems[itemId];
       }
+      selectedDocPrice = Object.values(selectedDocItems).reduce(function (a, b) { return a + b; }, 0);
       updateGrandTotal();
     }
 
@@ -2294,13 +2450,20 @@
         return;
       }
 
+      // Prices are never sent from the client — the server looks up the
+      // authoritative amount in Firestore for each selected id, so a
+      // visitor can't tamper with what actually gets charged.
+      const selectedPackageIds = ['all_inclusive', 'admission', 'visa'].filter(function (id) { return packagePrices[id] > 0; });
+      const selectedDocServiceIds = Object.keys(selectedDocItems);
+
       try {
         const res = await fetch('/api/create-checkout-session', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            packageId: activePackageId || 'custom_quote',
-            customAmount: !activePackageId ? (packagePrices.all_inclusive + packagePrices.admission + packagePrices.visa + selectedDocPrice) : undefined,
+            packageId: activePackageId || undefined,
+            selectedPackageIds: !activePackageId ? selectedPackageIds : undefined,
+            selectedDocServiceIds: !activePackageId ? selectedDocServiceIds : undefined,
             customerName: name,
             customerPhone: phone
           })
@@ -2382,7 +2545,8 @@
 
     window.onload = function() {
       initMap();
-      renderDocServices();
+      loadDocServicesFromFirestore();
+      loadPackagesFromFirestore();
       if (new URLSearchParams(location.search).get('auth') === 'required') {
         openAuthModal();
         showAuthError('Kabinetə daxil olmaq üçün əvvəlcə giriş edin.');
