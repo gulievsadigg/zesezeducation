@@ -2531,8 +2531,7 @@
           });
         } catch (notifyErr) { /* best-effort notification, order is already saved */ }
 
-        // TODO: sayt sahibi bunu öz WhatsApp Business nömrəsi ilə əvəz etsin
-        const waNumber = '994000000000';
+        const waNumber = '994706000280';
         const waText = encodeURIComponent('Salam! ' + countryLabel + ' üzrə relokasiya xidmətləri sifariş etdim: ' + docOrderState.itemNames.join(', ') + '. Cəmi: ' + docOrderState.total + ' AZN.');
         statusEl.innerHTML = '✅ Sifarişiniz qeydə alındı! Kabinetinizdə ("Kabinetim" → "Sifarişlərim") izləyə bilərsiniz. <a href="https://wa.me/' + waNumber + '?text=' + waText + '" target="_blank" rel="noopener" style="color:#15803D;font-weight:800;text-decoration:underline;">WhatsApp ilə də yaza bilərsiniz →</a>';
         statusEl.className = 'status-msg ok';
