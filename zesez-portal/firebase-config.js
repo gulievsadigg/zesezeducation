@@ -24,10 +24,11 @@
 // hələ doldurulmadığını bildirir.
 
 window.ZESEZ_FIREBASE_CONFIG = {
-  apiKey: "BURAYA_OZUNUZUN_API_ACHARINIZI_YAZIN",
-  authDomain: "your-project-id.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project-id.appspot.com",
-  messagingSenderId: "000000000000",
-  appId: "1:000000000000:web:0000000000000000000000"
+  apiKey: "AIzaSyCx2e7vkbD6l4uVWCDI6n6hAT5oUvENfWk",
+  authDomain: "zesezeducation-de372.firebaseapp.com",
+  projectId: "zesezeducation-de372",
+  storageBucket: "zesezeducation-de372.firebasestorage.app",
+  messagingSenderId: "268303647950",
+  appId: "1:268303647950:web:466deaa96febf20cee7c9f",
+  measurementId: "G-J740BS79QR"
 };
