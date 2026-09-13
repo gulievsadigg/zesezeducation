@@ -1,0 +1,11 @@
+// Zesez Education — Firebase Storage Təhlükəsizlik Qaydaları
+// Firebase Console > Storage > Rules bölməsinə köçürün.
+// Hər istifadəçi yalnız öz sənəd qovluğuna daxil ola bilər.
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /users/{userId}/{allPaths=**} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}

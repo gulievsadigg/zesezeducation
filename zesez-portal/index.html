@@ -1170,9 +1170,13 @@
       <a href="#packages-section">Paketlər & Qiymətlər</a>
       <a href="#country-doc-section">Daxili Sənədləşmə</a>
       <a href="#courses-section">Dil Kursları & Müəllimlər</a>
+      <a href="/dashboard.html">🎓 Kabinetim</a>
     </nav>
 
-    <a href="javascript:void(0)" onclick="openModal('Ümumi Müraciət')" class="header-btn">Müraciət Et</a>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div id="auth-header-area"></div>
+      <a href="javascript:void(0)" onclick="openModal('Ümumi Müraciət')" class="header-btn">Müraciət Et</a>
+    </div>
   </header>
 
   <!-- Hero Section -->
@@ -1727,6 +1731,72 @@
     </div>
   </div>
 
+  <!-- Tələbə Girişi / Qeydiyyatı Modalı (Firebase Auth: Google + Telefon) -->
+  <div id="auth-modal" class="modal-backdrop">
+    <div class="modal-window" style="max-width: 420px;">
+      <button onclick="closeAuthModal()" class="modal-close-btn">&times;</button>
+      <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+        <div class="logo-circle" style="width: 36px; height: 36px;">
+          <span class="z" style="font-size: 1rem;">Z</span><span class="s" style="font-size: 1rem;">S</span>
+        </div>
+        <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue);">Tələbə Kabinetinə Giriş</h3>
+      </div>
+      <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">
+        Google hesabınızla və ya telefon nömrənizlə bir neçə saniyəyə şəxsi kabinetinizi açın.
+      </p>
+
+      <div id="auth-error-box" style="display: none; background: #FEF2F2; border: 1.5px solid #FECACA; color: #B91C1C; padding: 10px 14px; border-radius: 10px; font-size: 0.85rem; font-weight: 600; margin-bottom: 16px;"></div>
+
+      <div id="auth-step-start">
+        <button id="google-signin-btn" onclick="handleGoogleSignIn()" class="btn-blue-outline" style="width: 100%; justify-content: center; padding: 13px; margin-bottom: 16px;">
+          <svg width="18" height="18" viewBox="0 0 48 48" style="margin-right: 6px;">
+            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.5 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3l6-6C34.4 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.1 8 3l6-6C34.4 5.1 29.5 3 24 3 16.1 3 9.3 7.5 6.3 14.7z"/>
+            <path fill="#4CAF50" d="M24 45c5.3 0 10.1-1.8 13.9-5l-6.4-5.4C29.4 36 26.9 37 24 37c-5.3 0-9.8-3.4-11.4-8.1l-6.6 5.1C9.2 40.4 16 45 24 45z"/>
+            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.4l6.4 5.4C40.8 36.9 45 31 45 24c0-1.2-.1-2.4-.4-3.5z"/>
+          </svg>
+          Google ilə davam et
+        </button>
+
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px;">
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+          <span style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">VƏ YA</span>
+          <div style="flex: 1; height: 1px; background: var(--border-color);"></div>
+        </div>
+
+        <div class="field-box" style="margin-bottom: 14px;">
+          <label>Telefon Nömrəniz</label>
+          <input type="tel" id="auth-phone-input" class="input-style" placeholder="+994 50 123 45 67">
+        </div>
+        <button id="send-code-btn" onclick="handleSendCode()" class="btn-orange-lg" style="width: 100%; padding: 13px;">
+          📲 Təsdiq Kodu Göndər
+        </button>
+      </div>
+
+      <div id="auth-step-code" style="display: none;">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+          <strong id="auth-sent-phone-label" style="color: var(--primary-dark-blue);"></strong> nömrəsinə göndərilən 6 rəqəmli kodu daxil edin:
+        </p>
+        <div class="field-box" style="margin-bottom: 14px;">
+          <label>Təsdiq Kodu</label>
+          <input type="text" id="auth-code-input" inputmode="numeric" maxlength="6" class="input-style" placeholder="――――――" style="letter-spacing: 6px; font-weight: 800; text-align: center; font-size: 1.2rem;">
+        </div>
+        <div class="field-box" style="margin-bottom: 18px;">
+          <label>Adınız (ilk dəfə daxil olursunuzsa)</label>
+          <input type="text" id="auth-name-input" class="input-style" placeholder="Məs: Əli Məmmədov">
+        </div>
+        <button id="confirm-code-btn" onclick="handleConfirmCode()" class="btn-orange-lg" style="width: 100%; padding: 13px; margin-bottom: 10px;">
+          ✅ Təsdiqlə və Daxil Ol
+        </button>
+        <button onclick="backToAuthStart()" class="btn-blue-outline" style="width: 100%; justify-content: center; padding: 10px; font-size: 0.85rem;">
+          ← Geri qayıt
+        </button>
+      </div>
+
+      <div id="recaptcha-container"></div>
+    </div>
+  </div>
+
   <!-- Application / Contact Modal -->
   <div id="contact-modal" class="modal-backdrop">
     <div class="modal-window">
@@ -1788,6 +1858,13 @@
 
   <!-- Leaflet JS Library -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+
+  <!-- Firebase (Google + Telefon Girişi üçün) -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script src="/auth.js"></script>
 
   <script>
     // 1. Video Player Modal Logic (Dedicated Video Viewport)
@@ -2171,7 +2248,124 @@
     window.onload = function() {
       initMap();
       renderDocServices();
+      if (new URLSearchParams(location.search).get('auth') === 'required') {
+        openAuthModal();
+        showAuthError('Kabinetə daxil olmaq üçün əvvəlcə giriş edin.');
+      }
     };
+
+    // ================= TƏLƏBƏ GİRİŞİ / QEYDİYYATI (Firebase Auth) =================
+    function openAuthModal() {
+      document.getElementById('auth-error-box').style.display = 'none';
+      document.getElementById('auth-modal').style.display = 'flex';
+    }
+    function closeAuthModal() {
+      document.getElementById('auth-modal').style.display = 'none';
+      backToAuthStart();
+    }
+    function backToAuthStart() {
+      document.getElementById('auth-step-start').style.display = 'block';
+      document.getElementById('auth-step-code').style.display = 'none';
+      document.getElementById('auth-code-input').value = '';
+    }
+    function showAuthError(msg) {
+      const box = document.getElementById('auth-error-box');
+      box.innerText = msg;
+      box.style.display = 'block';
+    }
+
+    async function handleGoogleSignIn() {
+      const btn = document.getElementById('google-signin-btn');
+      btn.disabled = true;
+      try {
+        await window.ZesezAuth.signInWithGoogle();
+        closeAuthModal();
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        showAuthError(window.ZesezAuth.friendlyError(err));
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleSendCode() {
+      const phoneRaw = document.getElementById('auth-phone-input').value.trim();
+      if (!phoneRaw) { showAuthError('Zəhmət olmasa telefon nömrənizi daxil edin.'); return; }
+      const phone = phoneRaw.startsWith('+') ? phoneRaw.replace(/\s+/g, '') : '+' + phoneRaw.replace(/\D/g, '');
+      const btn = document.getElementById('send-code-btn');
+      btn.disabled = true;
+      btn.innerText = 'Göndərilir...';
+      try {
+        await window.ZesezAuth.startPhoneSignIn(phone);
+        document.getElementById('auth-sent-phone-label').innerText = phone;
+        document.getElementById('auth-step-start').style.display = 'none';
+        document.getElementById('auth-step-code').style.display = 'block';
+      } catch (err) {
+        showAuthError(window.ZesezAuth.friendlyError(err));
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '📲 Təsdiq Kodu Göndər';
+      }
+    }
+
+    async function handleConfirmCode() {
+      const code = document.getElementById('auth-code-input').value.trim();
+      const name = document.getElementById('auth-name-input').value.trim();
+      if (!code || code.length < 6) { showAuthError('Zəhmət olmasa 6 rəqəmli kodu tam daxil edin.'); return; }
+      const btn = document.getElementById('confirm-code-btn');
+      btn.disabled = true;
+      btn.innerText = 'Yoxlanılır...';
+      try {
+        await window.ZesezAuth.confirmPhoneCode(code, name || null);
+        closeAuthModal();
+        window.location.href = '/dashboard.html';
+      } catch (err) {
+        showAuthError(window.ZesezAuth.friendlyError(err));
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '✅ Təsdiqlə və Daxil Ol';
+      }
+    }
+
+    function renderAuthHeader(user) {
+      const area = document.getElementById('auth-header-area');
+      if (!area) return;
+      if (user) {
+        const initial = (user.displayName || user.phoneNumber || user.email || 'T').trim().charAt(0).toUpperCase();
+        const label = user.displayName || user.phoneNumber || 'Kabinetim';
+        area.innerHTML =
+          '<div style="position:relative;">' +
+            '<button onclick="toggleUserDropdown()" style="display:flex;align-items:center;gap:8px;background:var(--accent-soft-blue);border:1.5px solid #BFDBFE;padding:6px 14px 6px 6px;border-radius:50px;cursor:pointer;">' +
+              '<span style="width:28px;height:28px;border-radius:50%;background:var(--primary-blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.85rem;">' + initial + '</span>' +
+              '<span style="font-weight:700;font-size:0.85rem;color:var(--primary-dark-blue);">' + label + '</span>' +
+            '</button>' +
+            '<div id="user-dropdown" style="display:none;position:absolute;top:110%;right:0;background:#fff;border:1.5px solid var(--border-color);border-radius:14px;box-shadow:var(--shadow-md);min-width:180px;overflow:hidden;z-index:50;">' +
+              '<a href="/dashboard.html" style="display:block;padding:12px 16px;font-size:0.85rem;font-weight:700;color:var(--text-dark);text-decoration:none;">🎓 Kabinetim</a>' +
+              '<button onclick="handleSignOut()" style="display:block;width:100%;text-align:left;padding:12px 16px;font-size:0.85rem;font-weight:700;color:#DC2626;background:none;border:none;cursor:pointer;">🚪 Çıxış</button>' +
+            '</div>' +
+          '</div>';
+      } else {
+        area.innerHTML = '<button onclick="openAuthModal()" class="btn-blue-outline" style="padding:9px 20px;font-size:0.85rem;">🎓 Giriş / Qeydiyyat</button>';
+      }
+    }
+
+    function toggleUserDropdown() {
+      const dd = document.getElementById('user-dropdown');
+      if (dd) dd.style.display = dd.style.display === 'block' ? 'none' : 'block';
+    }
+    document.addEventListener('click', function (e) {
+      const dd = document.getElementById('user-dropdown');
+      if (dd && !e.target.closest('#auth-header-area')) dd.style.display = 'none';
+    });
+
+    async function handleSignOut() {
+      await window.ZesezAuth.signOutUser();
+      window.location.href = '/';
+    }
+
+    if (window.ZesezAuth) {
+      window.ZesezAuth.onAuthChange(renderAuthHeader);
+    }
   </script>
 </body>
 </html>
