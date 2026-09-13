@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Paneli — Zesez Education</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root {
+      --primary-blue: #1D4ED8;
+      --primary-dark-blue: #0F172A;
+      --primary-orange: #F97316;
+      --primary-orange-hover: #EA580C;
+      --accent-soft-blue: #EFF6FF;
+      --bg-light: #F8FAFC;
+      --text-dark: #0F172A;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --green: #10B981;
+      --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -3px rgba(30, 64, 175, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-light); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: var(--primary-dark-blue); padding: 14px 6%;
+      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+    }
+    .brand { color: #fff; font-weight: 800; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; }
+    .brand span.tag { color: var(--primary-orange); font-size: 0.68rem; font-weight: 700; margin-left: 6px; }
+    .top-link { text-decoration: none; font-size: 0.85rem; font-weight: 700; padding: 8px 16px; border-radius: 8px; }
+
+    .container { max-width: 1280px; width: 100%; margin: 30px auto; padding: 0 20px; flex: 1; }
+    .card { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 20px; padding: 28px; box-shadow: var(--shadow-sm); }
+
+    #login-screen, #denied-screen { max-width: 460px; margin: 70px auto; text-align: center; }
+    .google-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #fff;
+      border: 1.5px solid var(--border-color); padding: 13px 24px; border-radius: 12px; font-weight: 700;
+      cursor: pointer; font-size: 0.95rem; color: var(--text-dark);
+    }
+    .google-btn:hover { border-color: var(--primary-blue); }
+
+    .uid-box {
+      background: var(--bg-light); border: 1.5px dashed #CBD5E1; border-radius: 10px; padding: 12px;
+      font-family: monospace; font-size: 0.85rem; margin: 14px 0; word-break: break-all; color: var(--primary-blue);
+    }
+
+    .admin-layout { display: grid; grid-template-columns: 220px 1fr; gap: 24px; }
+    .tab-nav { display: flex; flex-direction: column; gap: 6px; }
+    .tab-btn {
+      background: transparent; border: none; text-align: left; padding: 12px 16px; border-radius: 10px;
+      font-weight: 700; font-size: 0.88rem; color: var(--text-muted); cursor: pointer;
+    }
+    .tab-btn:hover { background: var(--accent-soft-blue); color: var(--primary-blue); }
+    .tab-btn.active { background: var(--primary-blue); color: #fff; }
+
+    .admin-pane { display: none; }
+    .admin-pane.active { display: block; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; color: var(--text-muted); font-weight: 700; padding: 10px; border-bottom: 2px solid var(--border-color); }
+    td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+
+    .field-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .field-wrap label { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark-blue); }
+    .field-input { background: var(--bg-light); border: 1.5px solid var(--border-color); border-radius: 10px; padding: 12px 14px; font-size: 0.9rem; outline: none; }
+    .btn-primary { background: var(--primary-orange); color: white; border: none; padding: 13px 26px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
+    .btn-primary:hover { background: var(--primary-orange-hover); }
+
+    .status-msg { display: none; margin-top: 12px; font-size: 0.85rem; font-weight: 700; padding: 10px 14px; border-radius: 10px; }
+    .status-msg.ok { display: block; background: #DCFCE7; color: #15803D; }
+    .status-msg.err { display: block; background: #FEF2F2; color: #B91C1C; }
+
+    #loading-screen {
+      position: fixed; inset: 0; background: var(--bg-light); display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px; z-index: 200;
+    }
+    .spinner { width: 42px; height: 42px; border: 4px solid #DBEAFE; border-top-color: var(--primary-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 800px) { .admin-layout { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <p style="font-size: 0.9rem; color: var(--text-muted); font-weight: 700;">Yüklənir...</p>
+  </div>
+
+  <header>
+    <div class="brand">🛡️ Zesez Admin<span class="tag">İDARƏETMƏ PANELİ</span></div>
+    <div style="display:flex;gap:10px;">
+      <a href="/" class="top-link" style="color:#fff;background:rgba(255,255,255,0.1);">← Sayta Qayıt</a>
+      <button id="header-signout-btn" onclick="handleSignOut()" class="top-link" style="display:none; background:#FEE2E2; color:#DC2626; border:none; cursor:pointer;">Çıxış</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <div id="login-screen" style="display: none;">
+      <div class="card">
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 8px;">🛡️ Admin Girişi</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 20px;">Yalnız təsdiqlənmiş admin Google hesabları daxil ola bilər.</p>
+        <button class="google-btn" onclick="handleAdminGoogleSignIn()" id="admin-google-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48">
+            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.5 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3l6-6C34.4 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.1 8 3l6-6C34.4 5.1 29.5 3 24 3 16.1 3 9.3 7.5 6.3 14.7z"/>
+            <path fill="#4CAF50" d="M24 45c5.3 0 10.1-1.8 13.9-5l-6.4-5.4C29.4 36 26.9 37 24 37c-5.3 0-9.8-3.4-11.4-8.1l-6.6 5.1C9.2 40.4 16 45 24 45z"/>
+            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.4l6.4 5.4C40.8 36.9 45 31 45 24c0-1.2-.1-2.4-.4-3.5z"/>
+          </svg>
+          Google ilə davam et
+        </button>
+        <div id="login-error" class="status-msg err" style="display:none;"></div>
+      </div>
+    </div>
+
+    <div id="denied-screen" style="display: none;">
+      <div class="card">
+        <h2 style="font-size: 1.3rem; font-weight: 800; color: #DC2626; margin-bottom: 8px;">⛔ İcazə Yoxdur</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem;">Bu hesabın admin icazəsi yoxdur. Layihə sahibi Firebase Console-da <code>admins</code> kolleksiyasına aşağıdakı UID ilə bir sənəd əlavə etməlidir:</p>
+        <div class="uid-box" id="denied-uid"></div>
+        <button onclick="handleSignOut()" class="btn-primary">Başqa Hesabla Cəhd Et</button>
+      </div>
+    </div>
+
+    <div id="admin-dashboard" style="display: none;">
+      <div class="admin-layout">
+        <nav class="tab-nav card" style="height: fit-content;">
+          <button class="tab-btn active" onclick="switchAdminTab('pane-leads', this)">📋 Müraciətlər</button>
+          <button class="tab-btn" onclick="switchAdminTab('pane-companies', this)">🏢 Şirkətlər</button>
+          <button class="tab-btn" onclick="switchAdminTab('pane-students', this)">🎓 Tələbələr</button>
+          <button class="tab-btn" onclick="switchAdminTab('pane-pricing', this)">💳 Qiymət Tənzimləməsi</button>
+        </nav>
+
+        <main>
+          <div id="pane-leads" class="admin-pane active card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 14px;">📋 Son Müraciətlər</h2>
+            <div style="overflow-x: auto;">
+              <table>
+                <thead><tr><th>Ad</th><th>Telefon</th><th>Xidmət</th><th>Tarix</th></tr></thead>
+                <tbody id="leads-tbody"><tr><td colspan="4">Yüklənir...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="pane-companies" class="admin-pane card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 14px;">🏢 B2B Şirkətləri</h2>
+            <div style="overflow-x: auto;">
+              <table>
+                <thead><tr><th>Ad</th><th>VÖEN</th><th>Əlaqə</th><th>Tələbə Sayı</th><th>Komissiya (EUR)</th></tr></thead>
+                <tbody id="companies-tbody"><tr><td colspan="5">Yüklənir...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="pane-students" class="admin-pane card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 14px;">🎓 Qeydiyyatlı Tələbələr</h2>
+            <div style="overflow-x: auto;">
+              <table>
+                <thead><tr><th>Ad</th><th>Əlaqə</th><th>Hədəf Ölkə</th><th>Hədəf Universitet</th><th>GPA</th></tr></thead>
+                <tbody id="students-tbody"><tr><td colspan="5">Yüklənir...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div id="pane-pricing" class="admin-pane card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 6px;">💳 Qlobal Qiymət Tənzimləməsi</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px;">Bu dəyərlər Firestore-da saxlanılır. Mağaza kartlarına birbaşa bağlamaq üçün əlavə inteqrasiya tələb olunur.</p>
+            <form onsubmit="savePricing(event)">
+              <div class="field-wrap"><label>Depozit Məbləği (EUR)</label><input type="number" id="price-deposit" class="field-input"></div>
+              <div class="field-wrap"><label>Tam Qəbul Dəstəyi Paketi (AZN)</label><input type="number" id="price-admission" class="field-input"></div>
+              <div class="field-wrap"><label>Viza Dəstəyi Paketi (AZN)</label><input type="number" id="price-visa" class="field-input"></div>
+              <div class="field-wrap"><label>All-Inclusive VIP Paket (AZN)</label><input type="number" id="price-allinclusive" class="field-input"></div>
+              <button type="submit" class="btn-primary">Yadda Saxla</button>
+              <div id="pricing-status" class="status-msg"></div>
+            </form>
+          </div>
+        </main>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script src="/auth.js"></script>
+
+  <script>
+    function showScreen(id) {
+      ['login-screen', 'denied-screen', 'admin-dashboard'].forEach(s => {
+        document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
+      });
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('header-signout-btn').style.display = (id === 'login-screen') ? 'none' : 'inline-block';
+    }
+
+    function switchAdminTab(paneId, btn) {
+      document.querySelectorAll('.admin-pane').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.getElementById(paneId).classList.add('active');
+      btn.classList.add('active');
+    }
+
+    async function handleAdminGoogleSignIn() {
+      const btn = document.getElementById('admin-google-btn');
+      btn.disabled = true;
+      try {
+        await window.ZesezAuth.signInWithGoogle();
+      } catch (err) {
+        const box = document.getElementById('login-error');
+        box.innerText = window.ZesezAuth.friendlyError(err);
+        box.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleSignOut() {
+      await window.ZesezAuth.signOutUser();
+      window.location.href = '/admin.html';
+    }
+
+    function fmtDate(ts) {
+      if (!ts || !ts.toDate) return '-';
+      return ts.toDate().toLocaleString('az-AZ');
+    }
+
+    async function loadLeads() {
+      const db = window.ZesezAuth.db;
+      const tbody = document.getElementById('leads-tbody');
+      try {
+        const snap = await db.collection('leads').orderBy('createdAt', 'desc').limit(50).get();
+        if (snap.empty) { tbody.innerHTML = '<tr><td colspan="4">Hələ müraciət yoxdur.</td></tr>'; return; }
+        tbody.innerHTML = snap.docs.map(d => {
+          const x = d.data();
+          return '<tr><td>' + (x.name || '-') + '</td><td>' + (x.phone || '-') + '</td><td>' + (x.service || '-') + '</td><td>' + fmtDate(x.createdAt) + '</td></tr>';
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="4">Yüklənmə xətası: ' + window.ZesezAuth.friendlyError(err) + '</td></tr>';
+      }
+    }
+
+    async function loadCompanies() {
+      const db = window.ZesezAuth.db;
+      const tbody = document.getElementById('companies-tbody');
+      try {
+        const snap = await db.collection('companies').orderBy('createdAt', 'desc').limit(50).get();
+        if (snap.empty) { tbody.innerHTML = '<tr><td colspan="5">Hələ şirkət yoxdur.</td></tr>'; return; }
+        tbody.innerHTML = snap.docs.map(d => {
+          const x = d.data();
+          return '<tr><td>' + (x.name || '-') + '</td><td>' + (x.taxId || '-') + '</td><td>' + (x.contact || '-') + '</td><td>' + (x.studentCount || 0) + '</td><td>' + (x.commissionEUR || 0) + '</td></tr>';
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5">Yüklənmə xətası: ' + window.ZesezAuth.friendlyError(err) + '</td></tr>';
+      }
+    }
+
+    async function loadStudents() {
+      const db = window.ZesezAuth.db;
+      const tbody = document.getElementById('students-tbody');
+      try {
+        const snap = await db.collection('users').orderBy('createdAt', 'desc').limit(50).get();
+        if (snap.empty) { tbody.innerHTML = '<tr><td colspan="5">Hələ tələbə yoxdur.</td></tr>'; return; }
+        tbody.innerHTML = snap.docs.map(d => {
+          const x = d.data();
+          return '<tr><td>' + (x.displayName || '-') + '</td><td>' + (x.phoneNumber || x.email || '-') + '</td><td>' + (x.targetCountry || '-') + '</td><td>' + (x.targetUniversity || '-') + '</td><td>' + (x.gpa || '-') + '</td></tr>';
+        }).join('');
+      } catch (err) {
+        tbody.innerHTML = '<tr><td colspan="5">Yüklənmə xətası: ' + window.ZesezAuth.friendlyError(err) + '</td></tr>';
+      }
+    }
+
+    async function loadPricing() {
+      const db = window.ZesezAuth.db;
+      try {
+        const snap = await db.collection('pricing_config').doc('main').get();
+        const d = snap.exists ? snap.data() : {};
+        document.getElementById('price-deposit').value = d.depositEUR || '';
+        document.getElementById('price-admission').value = d.admissionAZN || '';
+        document.getElementById('price-visa').value = d.visaAZN || '';
+        document.getElementById('price-allinclusive').value = d.allInclusiveAZN || '';
+      } catch (err) { /* ignore, leave blank */ }
+    }
+
+    async function savePricing(e) {
+      e.preventDefault();
+      const db = window.ZesezAuth.db;
+      const data = {
+        depositEUR: Number(document.getElementById('price-deposit').value) || 0,
+        admissionAZN: Number(document.getElementById('price-admission').value) || 0,
+        visaAZN: Number(document.getElementById('price-visa').value) || 0,
+        allInclusiveAZN: Number(document.getElementById('price-allinclusive').value) || 0,
+        updatedAt: window.ZesezAuth.serverTimestamp()
+      };
+      try {
+        await db.collection('pricing_config').doc('main').set(data, { merge: true });
+        const box = document.getElementById('pricing-status');
+        box.innerText = '✅ Qiymətlər yadda saxlanıldı!';
+        box.className = 'status-msg ok';
+      } catch (err) {
+        const box = document.getElementById('pricing-status');
+        box.innerText = '❌ ' + window.ZesezAuth.friendlyError(err);
+        box.className = 'status-msg err';
+      }
+    }
+
+    window.ZesezAuth.onAuthChange(async function (user) {
+      if (!user) {
+        showScreen('login-screen');
+        return;
+      }
+      const admin = await window.ZesezAuth.isAdmin(user.uid);
+      if (!admin) {
+        document.getElementById('denied-uid').innerText = user.uid;
+        showScreen('denied-screen');
+        return;
+      }
+      showScreen('admin-dashboard');
+      loadLeads();
+      loadCompanies();
+      loadStudents();
+      loadPricing();
+    });
+  </script>
+</body>
+</html>

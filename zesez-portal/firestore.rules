@@ -1,11 +1,61 @@
 // Zesez Education — Firestore Təhlükəsizlik Qaydaları
 // Firebase Console > Firestore Database > Rules bölməsinə köçürün.
-// Hər istifadəçi yalnız öz sənədini oxuya/yaza bilər.
+//
+// Admin girişini vermək üçün: bir istifadəçi admin.html-də Google ilə daxil
+// olduqda, əgər ona icazə yoxdursa ekranda öz UID-i göstərilir. Həmin UID-i
+// Firestore Console-da "admins" kolleksiyasına, sənəd ID-si kimi əlavə edin
+// (sənədin içi boş qala bilər, məs: { role: "admin" }). Yalnız layihə
+// sahibi (Firebase Console girişi olan şəxs) bu sənədi yarada bilər —
+// aşağıdakı qayda ilə heç bir client tərəfindən yazıla bilməz.
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Tələbə profilləri — yalnız sahibi və admin oxuya/yaza bilər (admin yalnız oxuyur)
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if isAdmin();
+    }
+
+    // Admin siyahısı — Firebase Console-dan kənar heç kim yaza bilməz
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+    }
+
+    // B2B / Şirkət hesabları — sahibi öz profilini idarə edir, lakin komissiya
+    // məbləğini (pul) yalnız admin dəyişə bilər (aşağıdakı "allow write: if isAdmin()" ilə)
+    match /companies/{companyId} {
+      allow read: if request.auth != null && request.auth.uid == companyId;
+      allow read: if isAdmin();
+      allow create: if request.auth != null && request.auth.uid == companyId
+                    && request.resource.data.ownerUid == request.auth.uid
+                    && request.resource.data.commissionEUR == 0;
+      allow update: if request.auth != null && request.auth.uid == companyId
+                    && request.resource.data.commissionEUR == resource.data.commissionEUR;
+      allow write: if isAdmin();
+
+      match /students/{studentId} {
+        allow read, create: if request.auth != null && request.auth.uid == companyId;
+        allow read: if isAdmin();
+      }
+    }
+
+    // Ümumi müraciət formu (contact modal) — hər kəs yarada bilər, yalnız admin siyahını görə bilər
+    match /leads/{leadId} {
+      allow create: if true;
+      allow read, list: if isAdmin();
+    }
+
+    // Qlobal qiymət tənzimləməsi — hər kəs oxuya bilər (saytda göstərmək üçün), yalnız admin dəyişə bilər
+    match /pricing_config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
     }
   }
 }

@@ -1171,6 +1171,7 @@
       <a href="#country-doc-section">Daxili Sənədləşmə</a>
       <a href="#courses-section">Dil Kursları & Müəllimlər</a>
       <a href="/dashboard.html">🎓 Kabinetim</a>
+      <a href="/partner.html">🏢 Şirkət Girişi</a>
     </nav>
 
     <div style="display: flex; align-items: center; gap: 12px;">
@@ -2238,6 +2239,20 @@
         });
       } catch (err) {
         console.warn('Lead API logged offline.');
+      }
+
+      try {
+        if (window.ZesezAuth && window.ZesezAuth.db) {
+          await window.ZesezAuth.db.collection('leads').add({
+            name: name,
+            phone: phone,
+            service: service,
+            uid: (window.ZesezAuth.getCurrentUser() && window.ZesezAuth.getCurrentUser().uid) || null,
+            createdAt: window.ZesezAuth.serverTimestamp()
+          });
+        }
+      } catch (err) {
+        console.warn('Lead Firestore yazısı uğursuz oldu.', err);
       }
 
       alert(`Təşəkkür edirik, ${name}!\n\nMüraciətiniz qeydə alındı.\nSeçim: ${service}\n\nZesez Education təhsil meneceri qısa zamanda WhatsApp (${phone}) nömrənizlə əlaqə saxlayacaq.`);

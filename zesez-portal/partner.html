@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="az">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>B2B Partnyor Paneli — Zesez Education</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary-blue: #1D4ED8;
+      --primary-dark-blue: #1E3A8A;
+      --primary-orange: #F97316;
+      --primary-orange-hover: #EA580C;
+      --accent-soft-blue: #EFF6FF;
+      --accent-soft-orange: #FFF7ED;
+      --bg-light: #F8FAFC;
+      --text-dark: #0F172A;
+      --text-muted: #64748B;
+      --border-color: #E2E8F0;
+      --green: #10B981;
+      --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.05);
+      --shadow-md: 0 10px 25px -3px rgba(30, 64, 175, 0.08);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background-color: var(--bg-light); color: var(--text-dark); min-height: 100vh; display: flex; flex-direction: column; }
+
+    header {
+      background: #FFFFFF; border-bottom: 1px solid var(--border-color); padding: 14px 6%;
+      display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 100;
+      box-shadow: var(--shadow-sm);
+    }
+    .brand-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+    .logo-circle {
+      width: 42px; height: 42px; border-radius: 50%; background: #FFFFFF; border: 2px solid var(--primary-orange);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .logo-circle span.z { color: var(--primary-orange); font-weight: 800; font-size: 1.15rem; }
+    .logo-circle span.s { color: var(--primary-blue); font-weight: 800; font-size: 1.15rem; }
+    .top-link { text-decoration: none; font-size: 0.85rem; font-weight: 700; padding: 8px 16px; border-radius: 8px; }
+
+    .container { max-width: 1100px; width: 100%; margin: 40px auto; padding: 0 20px; flex: 1; }
+    .card { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 20px; padding: 32px; box-shadow: var(--shadow-sm); }
+
+    .field-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    .field-wrap label { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark-blue); }
+    .field-input {
+      background: var(--bg-light); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 13px 16px; font-size: 0.95rem; outline: none;
+    }
+    .field-input:focus { border-color: var(--primary-blue); background: #fff; }
+    .form-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
+
+    .btn-primary { background: var(--primary-orange); color: white; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.95rem; }
+    .btn-primary:hover { background: var(--primary-orange-hover); }
+    .btn-primary:disabled { opacity: 0.6; cursor: not-allowed; }
+
+    .stat-box { padding: 20px; border-radius: 14px; }
+    .status-msg { display: none; margin-top: 14px; font-size: 0.85rem; font-weight: 700; padding: 10px 14px; border-radius: 10px; }
+    .status-msg.ok { display: block; background: #DCFCE7; color: #15803D; }
+    .status-msg.err { display: block; background: #FEF2F2; color: #B91C1C; }
+
+    .student-row {
+      display: flex; justify-content: space-between; padding: 12px 14px; border: 1px solid var(--border-color);
+      border-radius: 10px; margin-bottom: 8px; font-size: 0.88rem;
+    }
+
+    #login-screen, #onboard-screen {
+      max-width: 440px; margin: 60px auto; text-align: center;
+    }
+    .google-btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px; background: #fff;
+      border: 1.5px solid var(--border-color); padding: 13px 24px; border-radius: 12px; font-weight: 700;
+      cursor: pointer; font-size: 0.95rem; color: var(--text-dark);
+    }
+    .google-btn:hover { border-color: var(--primary-blue); }
+
+    #loading-screen {
+      position: fixed; inset: 0; background: var(--bg-light); display: flex; align-items: center; justify-content: center;
+      flex-direction: column; gap: 14px; z-index: 200;
+    }
+    .spinner { width: 42px; height: 42px; border: 4px solid #DBEAFE; border-top-color: var(--primary-blue); border-radius: 50%; animation: spin 0.8s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+
+  <div id="loading-screen">
+    <div class="spinner"></div>
+    <p style="font-size: 0.9rem; color: var(--text-muted); font-weight: 700;">Yüklənir...</p>
+  </div>
+
+  <header>
+    <a href="/" class="brand-logo">
+      <div class="logo-circle"><span class="z">Z</span><span class="s">S</span></div>
+      <div>
+        <div style="font-weight: 800; font-size: 1.1rem; color: var(--primary-blue);">Zesez Education</div>
+        <div style="font-size: 0.68rem; font-weight: 700; color: var(--primary-orange);">B2B PARTNYOR PANELİ</div>
+      </div>
+    </a>
+    <div style="display: flex; gap: 10px; align-items: center;">
+      <a href="/" class="top-link" style="color: var(--primary-blue); background: var(--accent-soft-blue);">← Əsas Sayta Qayıt</a>
+      <button id="header-signout-btn" onclick="handleSignOut()" class="top-link" style="display:none; background: #FEE2E2; color: #DC2626; border: none; cursor: pointer;">Çıxış</button>
+    </div>
+  </header>
+
+  <div class="container">
+
+    <!-- Not signed in -->
+    <div id="login-screen" style="display: none;">
+      <div class="card">
+        <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 8px;">🏢 Şirkət / Agentlik Girişi</h2>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 22px;">
+          Tərəfdaşlıq panelinizə daxil olmaq üçün Google hesabınızla giriş edin.
+        </p>
+        <button class="google-btn" onclick="handlePartnerGoogleSignIn()" id="partner-google-btn">
+          <svg width="18" height="18" viewBox="0 0 48 48">
+            <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.9 32.5 29.4 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.9 1.1 8 3l6-6C34.4 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.2-.1-2.4-.4-3.5z"/>
+            <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.6 18.9 13 24 13c3.1 0 5.9 1.1 8 3l6-6C34.4 5.1 29.5 3 24 3 16.1 3 9.3 7.5 6.3 14.7z"/>
+            <path fill="#4CAF50" d="M24 45c5.3 0 10.1-1.8 13.9-5l-6.4-5.4C29.4 36 26.9 37 24 37c-5.3 0-9.8-3.4-11.4-8.1l-6.6 5.1C9.2 40.4 16 45 24 45z"/>
+            <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.9 2.6-2.6 4.8-4.8 6.4l6.4 5.4C40.8 36.9 45 31 45 24c0-1.2-.1-2.4-.4-3.5z"/>
+          </svg>
+          Google ilə davam et
+        </button>
+        <div id="login-error" class="status-msg err" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Signed in, but no company profile yet -->
+    <div id="onboard-screen" style="display: none;">
+      <div class="card" style="text-align: left;">
+        <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 8px;">Şirkət Profilinizi Tamamlayın</h2>
+        <p style="color: var(--text-muted); font-size: 0.88rem; margin-bottom: 22px;">
+          Panelə keçmək üçün şirkət məlumatlarınızı bir dəfəlik daxil edin.
+        </p>
+        <form onsubmit="handleOnboardSubmit(event)">
+          <div class="field-wrap">
+            <label>Şirkət / Agentlik Adı</label>
+            <input type="text" id="onboard-name" required class="field-input" placeholder="Məs: Global Study MMC">
+          </div>
+          <div class="field-wrap">
+            <label>VÖEN / Qeydiyyat Nömrəsi</label>
+            <input type="text" id="onboard-tax" required class="field-input" placeholder="1234567890">
+          </div>
+          <div class="field-wrap">
+            <label>Əlaqədar şəxs (telefon / email)</label>
+            <input type="text" id="onboard-contact" required class="field-input" placeholder="+994 50 000 00 00">
+          </div>
+          <button type="submit" id="onboard-submit-btn" class="btn-primary" style="width: 100%;">Panel Yarat</button>
+          <div id="onboard-status" class="status-msg"></div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Full dashboard -->
+    <div id="dashboard-screen" style="display: none;">
+      <div class="card">
+        <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 8px;" id="company-title">Şirkət İdarəetmə Paneli</h2>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">Tələbə axını və agentlik komissiyanızı buradan izləyin.</p>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 30px;">
+          <div class="stat-box" style="background: var(--accent-soft-blue); border: 1px solid #BFDBFE;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-blue);">Yönləndirilmiş Tələbələr</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary-dark-blue); margin-top: 6px;" id="stat-student-count">0 nəfər</div>
+          </div>
+          <div class="stat-box" style="background: var(--accent-soft-orange); border: 1px solid #FDBA74;">
+            <div style="font-size: 0.85rem; font-weight: 700; color: var(--primary-orange);">Qazanılan Komissiya</div>
+            <div style="font-size: 1.8rem; font-weight: 800; color: var(--primary-dark-blue); margin-top: 6px;" id="stat-commission">0 EUR</div>
+          </div>
+        </div>
+
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 12px;">Yeni Tələbə Əlavə Et</h3>
+        <form onsubmit="handleAddStudent(event)" style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px;">
+          <input type="text" id="new-student-name" required placeholder="Tələbə Adı Soyadı" class="field-input" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+          <input type="text" id="new-student-uni" required placeholder="Hədəf Universitet" class="field-input" style="flex: 1; min-width: 200px; margin-bottom: 0;">
+          <button type="submit" class="btn-primary">Əlavə Et</button>
+        </form>
+        <div id="add-student-status" class="status-msg"></div>
+
+        <h3 style="font-size: 1.15rem; font-weight: 800; color: var(--primary-dark-blue); margin: 24px 0 12px;">Son Əlavə Edilən Tələbələr</h3>
+        <div id="student-list"><p style="font-size: 0.85rem; color: var(--text-muted);">Hələ heç bir tələbə əlavə edilməyib.</p></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+  <script src="/firebase-config.js"></script>
+  <script src="/auth.js"></script>
+
+  <script>
+    let currentUser = null;
+
+    function showScreen(id) {
+      ['login-screen', 'onboard-screen', 'dashboard-screen'].forEach(s => {
+        document.getElementById(s).style.display = (s === id) ? 'block' : 'none';
+      });
+      document.getElementById('loading-screen').style.display = 'none';
+      document.getElementById('header-signout-btn').style.display = (id === 'login-screen') ? 'none' : 'inline-block';
+    }
+
+    async function handlePartnerGoogleSignIn() {
+      const btn = document.getElementById('partner-google-btn');
+      btn.disabled = true;
+      try {
+        await window.ZesezAuth.signInWithGoogle();
+      } catch (err) {
+        const box = document.getElementById('login-error');
+        box.innerText = window.ZesezAuth.friendlyError(err);
+        box.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    async function handleSignOut() {
+      await window.ZesezAuth.signOutUser();
+      window.location.href = '/';
+    }
+
+    async function handleOnboardSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('onboard-submit-btn');
+      btn.disabled = true;
+      const data = {
+        ownerUid: currentUser.uid,
+        name: document.getElementById('onboard-name').value.trim(),
+        taxId: document.getElementById('onboard-tax').value.trim(),
+        contact: document.getElementById('onboard-contact').value.trim(),
+        studentCount: 0,
+        commissionEUR: 0,
+        createdAt: window.ZesezAuth.serverTimestamp()
+      };
+      try {
+        await window.ZesezAuth.db.collection('companies').doc(currentUser.uid).set(data);
+        await loadCompanyDashboard();
+      } catch (err) {
+        const box = document.getElementById('onboard-status');
+        box.innerText = '❌ ' + window.ZesezAuth.friendlyError(err);
+        box.className = 'status-msg err';
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    function fmtStudentRow(name, uni) {
+      return '<div class="student-row"><span style="font-weight:700;">' + name + '</span><span style="color: var(--text-muted);">' + uni + '</span></div>';
+    }
+
+    async function loadStudents() {
+      const db = window.ZesezAuth.db;
+      const container = document.getElementById('student-list');
+      const snap = await db.collection('companies').doc(currentUser.uid)
+        .collection('students').orderBy('createdAt', 'desc').limit(20).get();
+      if (snap.empty) {
+        container.innerHTML = '<p style="font-size: 0.85rem; color: var(--text-muted);">Hələ heç bir tələbə əlavə edilməyib.</p>';
+        return;
+      }
+      container.innerHTML = snap.docs.map(d => fmtStudentRow(d.data().name, d.data().targetUniversity)).join('');
+    }
+
+    async function handleAddStudent(e) {
+      e.preventDefault();
+      const name = document.getElementById('new-student-name').value.trim();
+      const uni = document.getElementById('new-student-uni').value.trim();
+      const db = window.ZesezAuth.db;
+      try {
+        await db.collection('companies').doc(currentUser.uid).collection('students').add({
+          name: name,
+          targetUniversity: uni,
+          createdAt: window.ZesezAuth.serverTimestamp()
+        });
+        await db.collection('companies').doc(currentUser.uid).update({
+          studentCount: window.ZesezAuth.increment(1)
+        });
+        document.getElementById('new-student-name').value = '';
+        document.getElementById('new-student-uni').value = '';
+        showStatus('add-student-status', '✅ Tələbə sistemə əlavə olundu!', true);
+        await loadCompanyDashboard();
+      } catch (err) {
+        showStatus('add-student-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+      }
+    }
+
+    function showStatus(elId, msg, ok) {
+      const el = document.getElementById(elId);
+      el.innerText = msg;
+      el.className = 'status-msg ' + (ok ? 'ok' : 'err');
+      setTimeout(() => { el.style.display = 'none'; }, 4000);
+    }
+
+    async function loadCompanyDashboard() {
+      const db = window.ZesezAuth.db;
+      const snap = await db.collection('companies').doc(currentUser.uid).get();
+      if (!snap.exists) {
+        showScreen('onboard-screen');
+        return;
+      }
+      const data = snap.data();
+      document.getElementById('company-title').innerText = data.name + ' — B2B Partnyor Paneli';
+      document.getElementById('stat-student-count').innerText = (data.studentCount || 0) + ' nəfər';
+      document.getElementById('stat-commission').innerText = (data.commissionEUR || 0) + ' EUR';
+      showScreen('dashboard-screen');
+      await loadStudents();
+    }
+
+    window.ZesezAuth.onAuthChange(async function (user) {
+      if (!user) {
+        currentUser = null;
+        showScreen('login-screen');
+        return;
+      }
+      currentUser = user;
+      await loadCompanyDashboard();
+    });
+  </script>
+</body>
+</html>

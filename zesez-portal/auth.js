@@ -120,6 +120,20 @@
     await db.collection('users').doc(uid).set(data, { merge: true });
   }
 
+  async function isAdmin(uid) {
+    if (!db || !uid) return false;
+    try {
+      const snap = await db.collection('admins').doc(uid).get();
+      return snap.exists;
+    } catch (e) {
+      return false;
+    }
+  }
+
+  function getCurrentUser() {
+    return auth ? auth.currentUser : null;
+  }
+
   window.ZesezAuth = {
     isConfigured: !CONFIG_IS_PLACEHOLDER,
     friendlyError: friendlyError,
@@ -130,6 +144,11 @@
     onAuthChange: onAuthChange,
     getProfile: getProfile,
     saveProfile: saveProfile,
+    isAdmin: isAdmin,
+    getCurrentUser: getCurrentUser,
+    serverTimestamp: function () { return CONFIG_IS_PLACEHOLDER ? null : firebase.firestore.FieldValue.serverTimestamp(); },
+    increment: function (n) { return CONFIG_IS_PLACEHOLDER ? null : firebase.firestore.FieldValue.increment(n); },
+    get db() { return CONFIG_IS_PLACEHOLDER ? null : db; },
     get storage() { return CONFIG_IS_PLACEHOLDER ? null : firebase.storage(); }
   };
 })();
