@@ -1706,7 +1706,7 @@
         Seçilmiş xidmətlər üzrə yekun qiymət:
         <strong id="live-grand-total">900 AZN</strong>
       </div>
-      <button onclick="openModal('Xidmət Sifarişi: ' + document.getElementById('live-grand-total').innerText)" class="btn-orange-lg" style="padding: 16px 36px;">
+      <button onclick="handlePackageOrderClick()" class="btn-orange-lg" style="padding: 16px 36px;">
         Bu Paket Üzrə Müqavilə Bağla
       </button>
     </div>
@@ -2572,8 +2572,22 @@
     let activePackageId = null;
 
     function openModalWithPackage(serviceTitle, pkgId) {
+      if (!window.ZesezAuth.getCurrentUser()) {
+        openAuthModal();
+        showAuthError('Bu paketi sifariş etmək üçün əvvəlcə daxil olun.');
+        return;
+      }
       activePackageId = pkgId;
       openModal(serviceTitle);
+    }
+
+    function handlePackageOrderClick() {
+      if (!window.ZesezAuth.getCurrentUser()) {
+        openAuthModal();
+        showAuthError('Bu paketi sifariş etmək üçün əvvəlcə daxil olun.');
+        return;
+      }
+      openModal('Xidmət Sifarişi: ' + document.getElementById('live-grand-total').innerText);
     }
 
     async function payWithStripe() {
