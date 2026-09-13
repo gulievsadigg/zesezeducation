@@ -300,8 +300,15 @@
           container.appendChild(row);
         }
       } catch (err) {
-        container.innerHTML = '';
+        container.innerHTML = '<p style="font-size: 0.85rem; color: var(--text-muted);">📦 Sənəd Vaultu hazırda aktiv deyil (Firebase Storage quraşdırılmayıb). Digər bütün funksiyalar normal işləyir.</p>';
       }
+    }
+
+    function storageMsg(err) {
+      if (err && err.code && err.code.indexOf('storage/') === 0) {
+        return 'Sənəd Vaultu hazırda aktiv deyil (Firebase Storage quraşdırılmayıb). Sayt sahibi bunu Firebase Console-da aktivləşdirə bilər.';
+      }
+      return window.ZesezAuth.friendlyError(err);
     }
 
     async function handleDocUpload() {
@@ -317,7 +324,7 @@
         showStatus('vault-status', '✅ Sənəd uğurla yükləndi!', true);
         loadDocuments();
       } catch (err) {
-        showStatus('vault-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+        showStatus('vault-status', '❌ ' + storageMsg(err), false);
       }
     }
 
@@ -326,7 +333,7 @@
         await window.ZesezAuth.storage.ref().child(path).delete();
         loadDocuments();
       } catch (err) {
-        showStatus('vault-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+        showStatus('vault-status', '❌ ' + storageMsg(err), false);
       }
     }
 
