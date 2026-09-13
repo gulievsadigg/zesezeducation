@@ -461,6 +461,10 @@
     .autocomplete-item .ac-sub { font-size: 0.74rem; color: var(--text-muted); font-weight: 500; }
     .autocomplete-item:hover, .autocomplete-item.active { background: var(--accent-soft-blue); }
 
+    .status-msg { font-size: 0.85rem; font-weight: 700; padding: 10px 14px; border-radius: 10px; margin-top: 10px; }
+    .status-msg.ok { background: #DCFCE7; color: #15803D; }
+    .status-msg.err { background: #FEF2F2; color: #B91C1C; }
+
     /* Country Checkbox Selector with Clean Custom Dropdown */
     .country-selector-box {
       background: var(--bg-light);
@@ -1667,6 +1671,25 @@
       <!-- Dynamic Country Checklists -->
       <div id="country-services-display" class="doc-services-checklist"></div>
 
+      <!-- Relocation Order Cart: bundle discount + dashboard-integrated order -->
+      <div id="doc-order-summary" style="display: none; background: var(--accent-soft-orange); border: 2px solid #FDBA74; border-radius: 18px; padding: 22px; margin-bottom: 24px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <div style="font-weight: 800; color: var(--primary-dark-blue); font-size: 1.05rem;">📦 Seçilmiş Relokasiya Xidmətləri</div>
+            <div id="doc-order-items-list" style="font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; max-width: 480px;"></div>
+          </div>
+          <div style="text-align: right;">
+            <div id="doc-order-bundle-note" style="display: none; font-size: 0.78rem; font-weight: 800; color: #15803D; margin-bottom: 4px;"></div>
+            <div id="doc-order-subtotal-strike" style="display: none; font-size: 0.85rem; color: var(--text-muted); text-decoration: line-through;"></div>
+            <div style="font-size: 1.5rem; font-weight: 800; color: var(--primary-orange);" id="doc-order-total">0 AZN</div>
+          </div>
+        </div>
+        <button onclick="handleDocOrder()" id="doc-order-btn" class="btn-orange-lg" style="width: 100%; margin-top: 16px; padding: 15px;">
+          📦 Bu Xidmətləri Sifariş Ver
+        </button>
+        <div id="doc-order-status" class="status-msg" style="display: none;"></div>
+      </div>
+
       <!-- Custom Manual Requirement Box -->
       <div class="custom-req-box">
         <h4>✍️ Siyahıda olmayan xüsusi xidmətə ehtiyacınız var?</h4>
@@ -2408,6 +2431,120 @@
       }
       selectedDocPrice = Object.values(selectedDocItems).reduce(function (a, b) { return a + b; }, 0);
       updateGrandTotal();
+      updateDocOrderSummary();
+    }
+
+    // ---- Relocation Order Cart (bundle discount + dashboard-integrated order) ----
+    const BUNDLE_DISCOUNT_MIN_ITEMS = 3;
+    const BUNDLE_DISCOUNT_PCT = 12;
+    let docOrderState = null;
+
+    function findDocItemById(id) {
+      for (const key in DOC_SERVICES_BY_COUNTRY) {
+        const found = DOC_SERVICES_BY_COUNTRY[key].items.find(function (it) { return it.id === id; });
+        if (found) return found;
+      }
+      return null;
+    }
+
+    function updateDocOrderSummary() {
+      const box = document.getElementById('doc-order-summary');
+      const ids = Object.keys(selectedDocItems);
+      if (!ids.length) { box.style.display = 'none'; docOrderState = null; return; }
+      box.style.display = 'block';
+
+      const itemNames = [];
+      ids.forEach(function (id) {
+        const item = findDocItemById(id);
+        itemNames.push(item ? item.name : id);
+      });
+      document.getElementById('doc-order-items-list').innerText = itemNames.join(', ');
+
+      const discountPct = ids.length >= BUNDLE_DISCOUNT_MIN_ITEMS ? BUNDLE_DISCOUNT_PCT : 0;
+      const discountAmount = Math.round(selectedDocPrice * discountPct / 100);
+      const total = selectedDocPrice - discountAmount;
+
+      const bundleNote = document.getElementById('doc-order-bundle-note');
+      const strikeEl = document.getElementById('doc-order-subtotal-strike');
+      if (discountPct > 0) {
+        bundleNote.style.display = 'block';
+        bundleNote.innerText = '🎉 ' + ids.length + ' xidmət seçdiyiniz üçün ' + discountPct + '% Full Relokasiya Endirimi tətbiq olundu!';
+        strikeEl.style.display = 'block';
+        strikeEl.innerText = selectedDocPrice + ' AZN';
+      } else {
+        bundleNote.style.display = 'none';
+        strikeEl.style.display = 'none';
+      }
+      document.getElementById('doc-order-total').innerText = total + ' AZN';
+
+      docOrderState = {
+        country: currentDocCountry,
+        itemIds: ids,
+        itemNames: itemNames,
+        subtotal: selectedDocPrice,
+        discountPct: discountPct,
+        discountAmount: discountAmount,
+        total: total
+      };
+    }
+
+    async function handleDocOrder() {
+      if (!docOrderState || !docOrderState.itemIds.length) return;
+      const user = window.ZesezAuth.getCurrentUser();
+      if (!user) {
+        openAuthModal();
+        showAuthError('Bu xidmətləri sifariş vermək üçün əvvəlcə daxil olun — sifarişiniz kabinetinizdə görünəcək.');
+        return;
+      }
+      const btn = document.getElementById('doc-order-btn');
+      const statusEl = document.getElementById('doc-order-status');
+      btn.disabled = true;
+      btn.innerText = 'Göndərilir...';
+      try {
+        const countryLabel = (DOC_SERVICES_BY_COUNTRY[docOrderState.country] && DOC_SERVICES_BY_COUNTRY[docOrderState.country].label) || docOrderState.country;
+        const orderData = {
+          uid: user.uid,
+          country: docOrderState.country,
+          countryLabel: countryLabel,
+          items: docOrderState.itemIds.map(function (id) {
+            return { id: id, name: findDocItemById(id) ? findDocItemById(id).name : id, priceAZN: selectedDocItems[id] };
+          }),
+          subtotal: docOrderState.subtotal,
+          discountPct: docOrderState.discountPct,
+          discountAmount: docOrderState.discountAmount,
+          total: docOrderState.total,
+          status: 'active',
+          statusNote: 'Sifarişiniz qəbul edildi, komandamız tezliklə əlaqə saxlayacaq.',
+          createdAt: window.ZesezAuth.serverTimestamp()
+        };
+        await window.ZesezAuth.db.collection('orders').add(orderData);
+
+        try {
+          await fetch('/api/lead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              name: user.displayName || user.phoneNumber || user.email || 'Tələbə',
+              phone: user.phoneNumber || '-',
+              service: countryLabel + ' — Relokasiya Sifarişi: ' + docOrderState.itemNames.join(', ') + ' (Cəmi: ' + docOrderState.total + ' AZN)'
+            })
+          });
+        } catch (notifyErr) { /* best-effort notification, order is already saved */ }
+
+        // TODO: sayt sahibi bunu öz WhatsApp Business nömrəsi ilə əvəz etsin
+        const waNumber = '994000000000';
+        const waText = encodeURIComponent('Salam! ' + countryLabel + ' üzrə relokasiya xidmətləri sifariş etdim: ' + docOrderState.itemNames.join(', ') + '. Cəmi: ' + docOrderState.total + ' AZN.');
+        statusEl.innerHTML = '✅ Sifarişiniz qeydə alındı! Kabinetinizdə ("Kabinetim" → "Sifarişlərim") izləyə bilərsiniz. <a href="https://wa.me/' + waNumber + '?text=' + waText + '" target="_blank" rel="noopener" style="color:#15803D;font-weight:800;text-decoration:underline;">WhatsApp ilə də yaza bilərsiniz →</a>';
+        statusEl.className = 'status-msg ok';
+        statusEl.style.display = 'block';
+      } catch (err) {
+        statusEl.innerText = '❌ ' + (window.ZesezAuth.friendlyError ? window.ZesezAuth.friendlyError(err) : (err.message || 'Naməlum xəta'));
+        statusEl.className = 'status-msg err';
+        statusEl.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerText = '📦 Bu Xidmətləri Sifariş Ver';
+      }
     }
 
     function updateGrandTotal() {

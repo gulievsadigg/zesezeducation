@@ -74,5 +74,17 @@ service cloud.firestore {
       allow read: if true;
       allow write: if isAdmin();
     }
+
+    // Ölkə Relokasiya Konstruktoru sifarişləri (səbət + endirim + status) —
+    // tələbə yalnız öz sifarişini yarada/oxuya bilər, statusu isə (Aktiv/
+    // Tamamlandı/qeyd) yalnız admin dəyişə bilər ki, tələbə özünü "tamamlandı"
+    // kimi işarələyə bilməsin.
+    match /orders/{orderId} {
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.status == 'active';
+      allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+      allow read, list, update: if isAdmin();
+    }
   }
 }

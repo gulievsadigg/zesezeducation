@@ -135,6 +135,7 @@
           <button class="tab-btn active" onclick="switchAdminTab('pane-leads', this)">📋 Müraciətlər</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-companies', this)">🏢 Şirkətlər</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-students', this)">🎓 Tələbələr</button>
+          <button class="tab-btn" onclick="switchAdminTab('pane-orders', this)">📦 Sifarişlər</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-packages', this)">💳 Xidmət Paketləri</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-docservices', this)">🌍 Sənədləşmə Xidmətləri</button>
         </nav>
@@ -168,6 +169,13 @@
                 <tbody id="students-tbody"><tr><td colspan="5">Yüklənir...</td></tr></tbody>
               </table>
             </div>
+          </div>
+
+          <div id="pane-orders" class="admin-pane card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 6px;">📦 Relokasiya Sifarişləri</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px;">Statusu və qeydi dəyişdikdə tələbənin öz kabinetində dərhal əks olunur.</p>
+            <div id="orders-editor"></div>
+            <div id="orders-status" class="status-msg"></div>
           </div>
 
           <div id="pane-packages" class="admin-pane card">
@@ -297,6 +305,49 @@
       }
     }
 
+    // ---- Relokasiya Sifarişləri (orders/{id}) ----
+    async function loadOrdersAdmin() {
+      const db = window.ZesezAuth.db;
+      const container = document.getElementById('orders-editor');
+      try {
+        const snap = await db.collection('orders').orderBy('createdAt', 'desc').limit(100).get();
+        if (snap.empty) { container.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);">Hələ sifariş yoxdur.</p>'; return; }
+        container.innerHTML = snap.docs.map(function (d) {
+          const o = d.data();
+          const itemNames = (o.items || []).map(function (it) { return it.name; }).join(', ');
+          return '<div style="border:1px solid var(--border-color);border-radius:12px;padding:16px;margin-bottom:12px;">' +
+            '<div style="font-weight:800;color:var(--primary-dark-blue);margin-bottom:4px;">' + (o.countryLabel || o.country) + ' — ' + o.total + ' AZN</div>' +
+            '<div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:10px;">' + itemNames + ' &middot; UID: ' + o.uid + '</div>' +
+            '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;align-items:end;">' +
+              '<div class="field-wrap" style="margin-bottom:0;"><label>Status</label>' +
+                '<select class="field-input order-status-select">' +
+                  '<option value="active"' + (o.status === 'active' ? ' selected' : '') + '>Aktiv</option>' +
+                  '<option value="pending"' + (o.status === 'pending' ? ' selected' : '') + '>Gözləmədə</option>' +
+                  '<option value="done"' + (o.status === 'done' ? ' selected' : '') + '>Tamamlandı</option>' +
+                '</select></div>' +
+              '<div class="field-wrap" style="margin-bottom:0;"><label>Qeyd</label><input type="text" class="field-input order-note-input" value="' + (o.statusNote || '').replace(/"/g, '&quot;') + '"></div>' +
+              '<button type="button" class="btn-primary" style="height:46px;" onclick="saveOrderStatus(\'' + d.id + '\', this)">Yadda Saxla</button>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (err) {
+        container.innerHTML = '<p style="font-size:0.85rem;color:#B91C1C;">Yüklənmə xətası: ' + window.ZesezAuth.friendlyError(err) + '</p>';
+      }
+    }
+
+    async function saveOrderStatus(orderId, btn) {
+      const row = btn.parentElement;
+      const status = row.querySelector('.order-status-select').value;
+      const statusNote = row.querySelector('.order-note-input').value.trim();
+      const db = window.ZesezAuth.db;
+      try {
+        await db.collection('orders').doc(orderId).update({ status: status, statusNote: statusNote });
+        showStatus('orders-status', '✅ Sifariş yeniləndi!', true);
+      } catch (err) {
+        showStatus('orders-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+      }
+    }
+
     // ---- Xidmət Paketləri (packages/{id}) ----
     const PACKAGE_DEFS = [
       { id: 'all_inclusive', label: 'All-Inclusive VIP Paket', defaultName: 'Zesez All-Inclusive VIP Paket', defaultPrice: 1400 },
@@ -416,6 +467,7 @@
       loadLeads();
       loadCompanies();
       loadStudents();
+      loadOrdersAdmin();
       loadPackagesEditor();
       loadDocServicesAdmin();
     });

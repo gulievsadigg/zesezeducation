@@ -100,6 +100,12 @@
     .doc-row a { font-weight: 700; color: var(--primary-blue); text-decoration: none; }
     .doc-del-btn { background: #FEE2E2; color: #DC2626; border: none; padding: 6px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 0.78rem; }
 
+    .order-card { border: 1.5px solid var(--border-color); border-radius: 14px; padding: 18px; margin-bottom: 14px; }
+    .order-pill { font-size: 0.74rem; font-weight: 800; padding: 3px 12px; border-radius: 20px; display: inline-block; text-transform: uppercase; letter-spacing: 0.3px; }
+    .order-pill.active { background: #DCFCE7; color: #15803D; }
+    .order-pill.pending { background: #FEF3C7; color: #92400E; }
+    .order-pill.done { background: var(--accent-soft-blue); color: var(--primary-blue); }
+
     .status-msg { display: none; margin-top: 14px; font-size: 0.85rem; font-weight: 700; padding: 10px 14px; border-radius: 10px; }
     .status-msg.ok { display: block; background: #DCFCE7; color: #15803D; }
     .status-msg.err { display: block; background: #FEF2F2; color: #B91C1C; }
@@ -146,6 +152,7 @@
       <ul class="nav-menu">
         <li><button class="nav-item-btn active" onclick="switchTab('pane-profile', this)">👤 Şəxsi & Akademik Məlumatlar</button></li>
         <li><button class="nav-item-btn" onclick="switchTab('pane-vault', this)">📂 Sənəd Vaultu</button></li>
+        <li><button class="nav-item-btn" onclick="switchTab('pane-orders', this)">📦 Sifarişlərim</button></li>
         <li><button class="nav-item-btn" onclick="switchTab('pane-copilot', this)">🤖 AI Məsləhətçi</button></li>
         <li><button class="nav-item-btn signout" onclick="handleSignOut()">🚪 Hesabdan Çıx</button></li>
       </ul>
@@ -201,6 +208,12 @@
         </div>
         <div id="doc-list"></div>
         <div id="vault-status" class="status-msg"></div>
+      </div>
+
+      <div id="pane-orders" class="tab-pane">
+        <h2 class="pane-title">📦 Relokasiya Sifarişlərim</h2>
+        <p class="pane-subtitle">Ölkə Sənədləşmə Konstruktorundan verdiyiniz sifarişlərin statusunu buradan izləyin.</p>
+        <div id="orders-list"><p style="font-size: 0.85rem; color: var(--text-muted);">Yüklənir...</p></div>
       </div>
 
       <div id="pane-copilot" class="tab-pane">
@@ -344,6 +357,48 @@
       document.getElementById('copilot-question').value = '';
     }
 
+    const ORDER_STATUS_LABELS = { active: 'Aktiv', pending: 'Gözləmədə', done: 'Tamamlandı' };
+
+    async function loadOrders() {
+      const container = document.getElementById('orders-list');
+      const db = window.ZesezAuth.db;
+      if (!db) { container.innerHTML = ''; return; }
+      try {
+        const snap = await db.collection('orders').where('uid', '==', currentUser.uid).get();
+        if (snap.empty) {
+          container.innerHTML = '<p style="font-size: 0.85rem; color: var(--text-muted);">Hələ heç bir sifariş verməmisiniz. "Avropada Daxili Sənədləşmə Konstruktoru" bölməsindən (əsas səhifə) xidmət seçib sifariş verə bilərsiniz.</p>';
+          return;
+        }
+        const docs = snap.docs.slice().sort(function (a, b) {
+          const ta = a.data().createdAt && a.data().createdAt.toMillis ? a.data().createdAt.toMillis() : 0;
+          const tb = b.data().createdAt && b.data().createdAt.toMillis ? b.data().createdAt.toMillis() : 0;
+          return tb - ta;
+        });
+        container.innerHTML = docs.map(function (doc) {
+          const o = doc.data();
+          const pillClass = o.status === 'done' ? 'done' : (o.status === 'pending' ? 'pending' : 'active');
+          const itemNames = (o.items || []).map(function (it) { return it.name; }).join(', ');
+          const discountLine = o.discountPct ? ('<div style="font-size:0.8rem;color:#15803D;font-weight:700;margin-top:4px;">🎉 ' + o.discountPct + '% endirim tətbiq olundu (-' + o.discountAmount + ' AZN)</div>') : '';
+          return '<div class="order-card">' +
+            '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:8px;">' +
+              '<div>' +
+                '<div style="font-weight:800;color:var(--primary-dark-blue);">' + (o.countryLabel || o.country) + ' — Relokasiya Xidmətləri</div>' +
+                '<div style="font-size:0.85rem;color:var(--text-muted);margin-top:4px;max-width:420px;">' + itemNames + '</div>' +
+                discountLine +
+              '</div>' +
+              '<span class="order-pill ' + pillClass + '">' + (ORDER_STATUS_LABELS[o.status] || o.status) + '</span>' +
+            '</div>' +
+            '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding-top:12px;border-top:1px solid var(--border-color);">' +
+              '<span style="font-size:0.85rem;color:var(--text-muted);">' + (o.statusNote || '') + '</span>' +
+              '<span style="font-weight:800;color:var(--primary-orange);font-size:1.1rem;">' + o.total + ' AZN</span>' +
+            '</div>' +
+          '</div>';
+        }).join('');
+      } catch (err) {
+        container.innerHTML = '<p style="font-size: 0.85rem; color: #B91C1C;">Sifarişlər yüklənə bilmədi.</p>';
+      }
+    }
+
     window.ZesezAuth.onAuthChange(async function (user) {
       if (!user) {
         window.location.href = '/?auth=required';
@@ -360,6 +415,7 @@
       const profile = await window.ZesezAuth.getProfile(user.uid);
       populateProfileForm(profile || {});
       loadDocuments();
+      loadOrders();
     });
   </script>
 </body>
