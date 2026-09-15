@@ -440,24 +440,37 @@
     }
 
     /* Custom-styled <select> — hides the native browser arrow/chrome (which
-       looks plain/inconsistent across OSes) and draws our own chevron so
-       every dropdown on the form matches the site's design language. */
+       looks plain/inconsistent across OSes) and draws our own chevron via a
+       ::after on a wrapper element (NOT a background-image on the <select>
+       itself — some mobile Safari versions render a background-image set on
+       a <select> as a repeated/duplicated arrow when combined with
+       appearance:none, which is a separate bug from this one). The wrapper
+       approach draws the arrow in a totally separate layer, so it can't
+       interact with the select's own native rendering at all. */
+    .select-wrap { position: relative; }
+    .select-wrap::after {
+      content: '';
+      position: absolute;
+      right: 18px;
+      top: 50%;
+      width: 8px;
+      height: 8px;
+      border-right: 2.5px solid #64748B;
+      border-bottom: 2.5px solid #64748B;
+      transform: translateY(-70%) rotate(45deg);
+      pointer-events: none;
+    }
+    .select-wrap:focus-within::after { border-color: var(--primary-blue); }
     select.input-style {
       appearance: none;
       -webkit-appearance: none;
       -moz-appearance: none;
       background-color: var(--bg-light);
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 14px center;
-      background-size: 14px;
+      background-image: none;
       padding-right: 42px;
       cursor: pointer;
     }
     select.input-style:hover { border-color: var(--primary-blue); }
-    select.input-style:focus {
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231D4ED8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    }
 
     /* Autocomplete (university / major suggestions) */
     .autocomplete-wrap { position: relative; }
@@ -1359,6 +1372,7 @@
         <!-- Degree Options -->
         <div class="field-box">
           <label>Təhsil Pilləsi</label>
+          <div class="select-wrap">
           <select id="degree-select" class="input-style">
             <option value="bachelor">Bakalavr (Bachelor)</option>
             <option value="master" selected>Magistratura (Master)</option>
@@ -1366,11 +1380,13 @@
             <option value="foundation">Foundation / Studienkolleg / Kollec</option>
             <option value="postdoc">Post-Doktorantura & Tədqiqat</option>
           </select>
+          </div>
         </div>
 
         <!-- Student's Citizenship -->
         <div class="field-box">
           <label>Vətəndaşlığınız / Bitirdiyiniz Ölkə</label>
+          <div class="select-wrap">
           <select id="origin-country" class="input-style">
             <option value="az" selected>🇦🇿 Azərbaycan</option>
             <option value="tr">🇹🇷 Türkiyə</option>
@@ -1379,6 +1395,7 @@
             <option value="kz">🇰🇿 Qazaxıstan</option>
             <option value="other">Digər Xarici Ölkə</option>
           </select>
+          </div>
         </div>
 
         <!-- Current University -->
@@ -1429,6 +1446,7 @@
         <!-- Language Type -->
         <div class="field-box">
           <label>Dil Sertifikatının Növü</label>
+          <div class="select-wrap">
           <select id="lang-type" class="input-style" onchange="handleLanguageTypeChange()">
             <option value="none">Sertifikatım hələ yoxdur</option>
             <option value="ielts">IELTS</option>
@@ -1438,12 +1456,15 @@
             <option value="trki">Rus Dili Sertifikatı (TRKİ / ТРКИ)</option>
             <option value="goethe">Alman Dili (Goethe / TestDaF)</option>
           </select>
+          </div>
         </div>
 
         <!-- Score Selector -->
         <div class="field-box" id="score-wrapper">
           <label id="score-label">Sertifikat Balı</label>
+          <div class="select-wrap">
           <select id="score-select" class="input-style"></select>
+          </div>
         </div>
 
         <!-- Target Field -->
