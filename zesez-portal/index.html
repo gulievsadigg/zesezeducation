@@ -439,6 +439,26 @@
       box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
     }
 
+    /* Custom-styled <select> — hides the native browser arrow/chrome (which
+       looks plain/inconsistent across OSes) and draws our own chevron so
+       every dropdown on the form matches the site's design language. */
+    select.input-style {
+      appearance: none;
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-color: var(--bg-light);
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748B' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      background-size: 14px;
+      padding-right: 42px;
+      cursor: pointer;
+    }
+    select.input-style:hover { border-color: var(--primary-blue); }
+    select.input-style:focus {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231D4ED8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    }
+
     /* Autocomplete (university / major suggestions) */
     .autocomplete-wrap { position: relative; }
     .autocomplete-list {
@@ -475,44 +495,46 @@
     }
 
     .country-checkboxes-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-      gap: 12px;
-      margin-top: 10px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 12px;
     }
 
+    /* Pill-style toggle chips — replaces the plain checkbox+label row so all
+       target countries can be shown openly at once (no "add country" modal)
+       while still looking deliberate rather than a raw form list. */
     .country-check-label {
       display: flex;
       align-items: center;
-      gap: 8px;
-      font-size: 0.88rem;
-      font-weight: 600;
+      gap: 7px;
+      font-size: 0.86rem;
+      font-weight: 700;
+      color: var(--text-dark);
       cursor: pointer;
       user-select: none;
+      background: #FFFFFF;
+      border: 1.5px solid var(--border-color);
+      border-radius: 50px;
+      padding: 9px 16px 9px 12px;
+      transition: 0.18s;
+    }
+
+    .country-check-label:hover {
+      border-color: var(--primary-blue);
+    }
+
+    .country-check-label.pill-active {
+      background: var(--accent-soft-blue);
+      border-color: var(--primary-blue);
+      color: var(--primary-blue);
     }
 
     .country-check-label input[type="checkbox"] {
-      width: 18px;
-      height: 18px;
-      accent-color: var(--primary-orange);
+      width: 16px;
+      height: 16px;
+      accent-color: var(--primary-blue);
       cursor: pointer;
-    }
-
-    .btn-add-more-countries {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 14px;
-      color: var(--primary-blue);
-      font-weight: 800;
-      font-size: 0.88rem;
-      background: none;
-      border: none;
-      cursor: pointer;
-    }
-
-    .btn-add-more-countries:hover {
-      text-decoration: underline;
     }
 
     #score-wrapper { display: none; }
@@ -1162,29 +1184,6 @@
       border: none;
     }
 
-    /* More Countries Modal */
-    .more-countries-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.65);
-      backdrop-filter: blur(6px);
-      z-index: 3500;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-    }
-
-    .more-countries-box {
-      background: #FFFFFF;
-      border-radius: 24px;
-      max-width: 600px;
-      width: 100%;
-      padding: 30px;
-      max-height: 85vh;
-      overflow-y: auto;
-    }
-
     /* Contact Modal */
     .modal-backdrop {
       display: none;
@@ -1398,27 +1397,32 @@
         </div>
       </div>
 
-      <!-- IMPROVED: Clean Checkbox Selector for Target Countries with "+ Digər Ölkə Əlavə Et" -->
+      <!-- All supported target countries shown openly as toggle pills — no
+           separate "add country" click-through needed to see the full list. -->
       <div class="country-selector-box">
         <label style="font-weight: 800; font-size: 0.95rem; color: var(--primary-dark-blue); display: block;">
           Planlaşdırdığınız Hədəf Ölkələr:
         </label>
         <span style="font-size: 0.8rem; color: var(--text-muted);">Maraqlandığınız ölkələri qutucuqlardan işarələyin:</span>
-        
-        <div id="target-country-checkboxes" class="country-checkboxes-grid">
-          <label class="country-check-label"><input type="checkbox" value="Almaniya" checked> 🇩🇪 Almaniya</label>
-          <label class="country-check-label"><input type="checkbox" value="İtaliya" checked> 🇮🇹 İtaliya</label>
-          <label class="country-check-label"><input type="checkbox" value="Macarıstan" checked> 🇭🇺 Macarıstan</label>
-          <label class="country-check-label"><input type="checkbox" value="Polşa"> 🇵🇱 Polşa</label>
-          <label class="country-check-label"><input type="checkbox" value="Avstriya"> 🇦🇹 Avstriya</label>
-          <label class="country-check-label"><input type="checkbox" value="Latviya"> 🇱🇻 Latviya</label>
-          <label class="country-check-label"><input type="checkbox" value="Litva"> 🇱🇹 Litva</label>
-          <label class="country-check-label"><input type="checkbox" value="Çexiya"> 🇨🇿 Çexiya</label>
-        </div>
 
-        <button type="button" onclick="openMoreCountriesModal()" class="btn-add-more-countries">
-          <span>+</span> Digər Avropa Ölkələrini Əlavə Et (İsveçrə, Niderland, Belçika və s.)
-        </button>
+        <div id="target-country-checkboxes" class="country-checkboxes-grid">
+          <label class="country-check-label pill-active"><input type="checkbox" value="Almaniya" checked onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇩🇪 Almaniya</label>
+          <label class="country-check-label pill-active"><input type="checkbox" value="İtaliya" checked onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇮🇹 İtaliya</label>
+          <label class="country-check-label pill-active"><input type="checkbox" value="Macarıstan" checked onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇭🇺 Macarıstan</label>
+          <label class="country-check-label"><input type="checkbox" value="Polşa" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇵🇱 Polşa</label>
+          <label class="country-check-label"><input type="checkbox" value="Avstriya" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇦🇹 Avstriya</label>
+          <label class="country-check-label"><input type="checkbox" value="Latviya" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇱🇻 Latviya</label>
+          <label class="country-check-label"><input type="checkbox" value="Litva" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇱🇹 Litva</label>
+          <label class="country-check-label"><input type="checkbox" value="Çexiya" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇨🇿 Çexiya</label>
+          <label class="country-check-label"><input type="checkbox" value="İsveçrə" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇨🇭 İsveçrə</label>
+          <label class="country-check-label"><input type="checkbox" value="Niderland" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇳🇱 Niderland</label>
+          <label class="country-check-label"><input type="checkbox" value="Belçika" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇧🇪 Belçika</label>
+          <label class="country-check-label"><input type="checkbox" value="İsveç" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇸🇪 İsveç</label>
+          <label class="country-check-label"><input type="checkbox" value="Finlandiya" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇫🇮 Finlandiya</label>
+          <label class="country-check-label"><input type="checkbox" value="İspaniya" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇪🇸 İspaniya</label>
+          <label class="country-check-label"><input type="checkbox" value="Fransa" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇫🇷 Fransa</label>
+          <label class="country-check-label"><input type="checkbox" value="Estoniya" onchange="this.parentElement.classList.toggle('pill-active', this.checked)"> 🇪🇪 Estoniya</label>
+        </div>
       </div>
 
       <div class="form-row">
@@ -1430,6 +1434,9 @@
             <option value="ielts">IELTS</option>
             <option value="toefl">TOEFL iBT</option>
             <option value="duolingo">Duolingo English Test</option>
+            <option value="cambridge">İngilis Dili (Cambridge CAE/CPE)</option>
+            <option value="trki">Rus Dili Sertifikatı (TRKİ / ТРКИ)</option>
+            <option value="goethe">Alman Dili (Goethe / TestDaF)</option>
           </select>
         </div>
 
@@ -1812,30 +1819,6 @@
     </div>
   </div>
 
-  <!-- MORE COUNTRIES SELECTION MODAL -->
-  <div id="more-countries-modal" class="more-countries-modal">
-    <div class="more-countries-box">
-      <button onclick="closeMoreCountriesModal()" class="modal-close-btn">&times;</button>
-      <h3 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 6px;">Əlavə Avropa Ölkələri</h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 16px;">Siyahıya əlavə etmək istədiyiniz ölkələri işarələyin:</p>
-      
-      <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px;">
-        <label class="country-check-label"><input type="checkbox" id="add-c-switzerland" value="İsveçrə"> 🇨🇭 İsveçrə</label>
-        <label class="country-check-label"><input type="checkbox" id="add-c-netherlands" value="Niderland"> 🇳🇱 Niderland</label>
-        <label class="country-check-label"><input type="checkbox" id="add-c-belgium" value="Belçika"> 🇧🇪 Belçika</label>
-        <label class="country-check-label"><input type="checkbox" id="add-c-sweden" value="İsveç"> 🇸🇪 İsveç</label>
-        <label class="country-check-label"><input type="checkbox" id="add-c-finland" value="Finlandiya"> 🇫🇮 Finlandiya</label>
-        <label class="country-check-label"><input type="checkbox" id="add-c-spain" value="İspaniya"> 🇪🇸 İspaniya</label>
-        <label class="country-check-label"><input type="checkbox" id="add-c-france" value="Fransa"> 🇫🇷 Fransa</label>
-        <label class="country-check-label"><input type="checkbox" id="add-c-estonia" value="Estoniya"> 🇪🇪 Estoniya</label>
-      </div>
-
-      <button onclick="confirmAdditionalCountries()" class="btn-orange-lg" style="width: 100%;">
-        Seçilmişləri Əlavə Et
-      </button>
-    </div>
-  </div>
-
   <!-- Tələbə Girişi / Qeydiyyatı Modalı (Firebase Auth: Google + Telefon) -->
   <div id="auth-modal" class="modal-backdrop">
     <div class="modal-window" style="max-width: 420px;">
@@ -1984,33 +1967,6 @@
       document.getElementById('video-player-modal').style.display = 'none';
     }
 
-    // 2. More Countries Modal Logic
-    function openMoreCountriesModal() {
-      document.getElementById('more-countries-modal').style.display = 'flex';
-    }
-
-    function closeMoreCountriesModal() {
-      document.getElementById('more-countries-modal').style.display = 'none';
-    }
-
-    function confirmAdditionalCountries() {
-      const container = document.getElementById('target-country-checkboxes');
-      const checkedBoxes = document.querySelectorAll('#more-countries-modal input[type="checkbox"]:checked');
-
-      checkedBoxes.forEach(cb => {
-        // Check if already added
-        const exists = Array.from(container.querySelectorAll('input')).some(i => i.value === cb.value);
-        if (!exists) {
-          const newLabel = document.createElement('label');
-          newLabel.className = 'country-check-label';
-          newLabel.innerHTML = `<input type="checkbox" value="${cb.value}" checked> 🇪🇺 ${cb.value}`;
-          container.appendChild(newLabel);
-        }
-      });
-
-      closeMoreCountriesModal();
-    }
-
     // 3. Dynamic Language Scores
     function handleLanguageTypeChange() {
       const type = document.getElementById('lang-type').value;
@@ -2034,32 +1990,82 @@
       } else if (type === 'duolingo') {
         scoreLabel.innerText = 'Duolingo Balınız';
         ['125+', '115 - 120', '105 - 110', '95 - 100'].forEach(s => scoreSelect.innerHTML += `<option value="${s}">${s}</option>`);
+      } else if (type === 'cambridge') {
+        scoreLabel.innerText = 'Cambridge Səviyyəniz';
+        ['C2 (Proficiency - CPE)', 'C1 (Advanced - CAE)', 'B2 (First - FCE)', 'B1 (Preliminary - PET)'].forEach(s => scoreSelect.innerHTML += `<option value="${s}">${s}</option>`);
+      } else if (type === 'trki') {
+        scoreLabel.innerText = 'TRKİ Səviyyəniz';
+        ['TRKİ-4', 'TRKİ-3', 'TRKİ-2', 'TRKİ-1', 'Elementar (A1-A2)'].forEach(s => scoreSelect.innerHTML += `<option value="${s}">${s}</option>`);
+      } else if (type === 'goethe') {
+        scoreLabel.innerText = 'Alman Dili Səviyyəniz';
+        ['C1 / TestDaF 5', 'B2 / TestDaF 4', 'B1 / TestDaF 3', 'A2 - A1'].forEach(s => scoreSelect.innerHTML += `<option value="${s}">${s}</option>`);
       }
     }
 
-    // 3.5 Autocomplete: university name (live, via free Hipolabs API proxy)
-    // and target major/specialty (curated world-majors list)
+    // 3.5 Autocomplete: university name (Azərbaycan universitetləri lokal
+    // siyahıdan + xarici universitetlər Hipolabs-ın pulsuz dünya bazasından —
+    // eyni sahədə birləşdirilir, çünki bakalavrı xaricdə oxuyub magistraturanı
+    // da xaricdə etmək istəyən tələbələr də ola bilər) və hədəf ixtisas
+    // sahəsi (curated Azərbaycan dilində ixtisaslar siyahısı, admin.html-dən
+    // "majors" kolleksiyasına əlavələr edilə bilər — bax loadMajorsFromFirestore).
+    const AZ_UNIVERSITIES = [
+      'Bakı Dövlət Universiteti (BDU)', 'Azərbaycan Dövlət İqtisad Universiteti (UNEC)',
+      'Azərbaycan Texniki Universiteti (AzTU)', 'Azərbaycan Dövlət Neft və Sənaye Universiteti (ADNSU)',
+      'ADA Universiteti', 'Xəzər Universiteti (Khazar University)', 'Qafqaz Universiteti',
+      'Azərbaycan Dillər Universiteti (ADU)', 'Azərbaycan Tibb Universiteti (ATU)',
+      'Bakı Ali Neft Məktəbi (BHOS)', 'Bakı Mühəndislik Universiteti (BEU)', 'Bakı Biznes Universiteti',
+      'Azərbaycan Memarlıq və İnşaat Universiteti (AzMİU)', 'Azərbaycan Dövlət Aqrar Universiteti (Gəncə)',
+      'Sumqayıt Dövlət Universiteti', 'Gəncə Dövlət Universiteti', 'Naxçıvan Dövlət Universiteti',
+      'Lənkəran Dövlət Universiteti', 'Mingəçevir Dövlət Universiteti',
+      'Azərbaycan Dövlət Pedaqoji Universiteti (ADPU)', 'Bakı Slavyan Universiteti (BSU)',
+      'Azərbaycan Dövlət Mədəniyyət və İncəsənət Universiteti', 'Milli Aviasiya Akademiyası (NAA)',
+      'Azərbaycan Respublikasının Prezidenti yanında Dövlət İdarəçilik Akademiyası',
+      'Azərbaycan Dövlət Bədən Tərbiyəsi və İdman Akademiyası',
+      'Bakı Musiqi Akademiyası (Ü. Hacıbəyov adına)', 'Azərbaycan Milli Konservatoriyası',
+      'Bakı Avrasiya Universiteti', 'Bakı Qızlar Universiteti', 'Odlar Yurdu Universiteti',
+      'Qərb Kaspi Universiteti', 'Azərbaycan Universiteti', 'Azərbaycan Turizm və Menecment Universiteti',
+      'Naxçıvan Müəllimlər İnstitutu'
+    ];
+
     const WORLD_MAJORS = [
       'Kompüter Mühəndisliyi', 'Kompüter Elmləri', 'Süni İntellekt və Data Elmi', 'İnformasiya Texnologiyaları',
       'Proqram Mühəndisliyi', 'Kibertəhlükəsizlik', 'Elektrik və Elektronika Mühəndisliyi', 'Mexanika Mühəndisliyi',
       'İnşaat Mühəndisliyi', 'Kimya Mühəndisliyi', 'Neft-Qaz Mühəndisliyi', 'Aerokosmik Mühəndislik',
       'Biotexnologiya', 'Biotibbi Mühəndislik', 'Robototexnika', 'Materialşünaslıq Mühəndisliyi',
+      'Energetika Mühəndisliyi', 'Metallurgiya Mühəndisliyi', 'Geodeziya və Kartoqrafiya',
       'İqtisadiyyat', 'Biznesin İdarə Edilməsi (MBA)', 'Maliyyə', 'Mühasibatlıq', 'Marketinq', 'Menecment',
-      'Beynəlxalq Ticarət', 'Logistika və Təchizat Zənciri', 'Sahibkarlıq', 'Bank İşi',
-      'Hüquq', 'Beynəlxalq Hüquq', 'Beynəlxalq Münasibətlər', 'Siyasi Elmlər', 'Diplomatiya',
-      'Tibb (Həkimlik)', 'Diş Həkimliyi', 'Əczaçılıq', 'Tibb Bacılığı (Nursing)', 'İctimai Səhiyyə',
-      'Psixologiya', 'Sosiologiya', 'Sosial İş', 'Pedaqogika', 'Erkən Yaş Təhsili',
-      'Memarlıq', 'Şəhərsalma və Regional Planlaşdırma', 'Qrafik Dizayn', 'Sənaye Dizaynı', 'İncəsənət',
-      'Jurnalistika', 'Kütləvi Kommunikasiya', 'Media və Rabitə', 'Film və Televiziya İstehsalı',
-      'Turizm və Otelçilik İdarəçiliyi', 'Aşpazlıq Sənəti (Culinary Arts)',
-      'Kənd Təsərrüfatı Elmləri', 'Ətraf Mühit Mühəndisliyi', 'Ekologiya', 'Dənizçilik Mühəndisliyi',
-      'Riyaziyyat', 'Fizika', 'Kimya (Elm)', 'Biologiya', 'Astronomiya', 'Geologiya',
-      'Tarix', 'Fəlsəfə', 'Dilçilik', 'Ədəbiyyat', 'Tərcüməşünaslıq',
-      'İdman Elmləri', 'Fizioterapiya', 'Qidalanma və Dietologiya', 'Baytarlıq',
-      'Aviasiya və Uçuş İdarəçiliyi', 'Dəniz Nəqliyyatı Mühəndisliyi', 'Nəqliyyat Mühəndisliyi',
-      'Data Analitikası', 'İş Analitikası (Business Analytics)', 'Oyun Dizaynı (Game Design)',
-      'Musiqi', 'Teatr Sənəti', 'Rəqs'
+      'Beynəlxalq Ticarət', 'Logistika və Təchizat Zənciri', 'Sahibkarlıq', 'Bank İşi', 'Sığorta İşi',
+      'İnsan Resursları İdarəçiliyi', 'Layihə İdarəetməsi',
+      'Hüquq', 'Beynəlxalq Hüquq', 'Beynəlxalq Münasibətlər', 'Siyasi Elmlər', 'Diplomatiya', 'Dövlət İdarəçiliyi',
+      'Tibb (Həkimlik)', 'Diş Həkimliyi', 'Əczaçılıq', 'Tibb Bacılığı (Nursing)', 'İctimai Səhiyyə', 'Baytarlıq',
+      'Psixologiya', 'Sosiologiya', 'Sosial İş', 'Pedaqogika', 'Erkən Yaş Təhsili', 'Xüsusi Təhsil (Defektologiya)',
+      'Memarlıq', 'Şəhərsalma və Regional Planlaşdırma', 'Qrafik Dizayn', 'Sənaye Dizaynı', 'İncəsənət', 'Dizayn (Moda)',
+      'Jurnalistika', 'Kütləvi Kommunikasiya', 'Media və Rabitə', 'Film və Televiziya İstehsalı', 'PR və Reklam',
+      'Turizm və Otelçilik İdarəçiliyi', 'Aşpazlıq Sənəti (Culinary Arts)', 'Event Menecment',
+      'Kənd Təsərrüfatı Elmləri', 'Ətraf Mühit Mühəndisliyi', 'Ekologiya', 'Dənizçilik Mühəndisliyi', 'Meşəçilik',
+      'Riyaziyyat', 'Fizika', 'Kimya (Elm)', 'Biologiya', 'Astronomiya', 'Geologiya', 'Coğrafiya',
+      'Tarix', 'Fəlsəfə', 'Dilçilik', 'Ədəbiyyat', 'Tərcüməşünaslıq', 'Şərqşünaslıq', 'İlahiyyat (Din Elmləri)',
+      'İdman Elmləri', 'Fizioterapiya', 'Qidalanma və Dietologiya',
+      'Aviasiya və Uçuş İdarəçiliyi', 'Dəniz Nəqliyyatı Mühəndisliyi', 'Nəqliyyat Mühəndisliyi', 'Dəmir Yolu Nəqliyyatı',
+      'Data Analitikası', 'İş Analitikası (Business Analytics)', 'Oyun Dizaynı (Game Design)', 'Aparat Mühəndisliyi (IoT)',
+      'Musiqi', 'Teatr Sənəti', 'Rəqs', 'Kitabxanaşünaslıq və Arxivşünaslıq'
     ];
+
+    // Admin.html "İxtisaslar" tabından əlavə edilən sahələr bura yüklənir —
+    // Firestore boşdursa/əlçatmazdırsa yuxarıdakı statik siyahı ilə davam edilir.
+    let MAJORS_LIST = WORLD_MAJORS.slice();
+
+    async function loadMajorsFromFirestore() {
+      const db = window.ZesezAuth && window.ZesezAuth.db;
+      if (!db) return;
+      try {
+        const snap = await db.collection('majors').orderBy('name', 'asc').get();
+        if (!snap.empty) {
+          const extra = snap.docs.map(function (d) { return d.data().name; }).filter(Boolean);
+          MAJORS_LIST = Array.from(new Set(WORLD_MAJORS.concat(extra)));
+        }
+      } catch (err) { /* statik siyahı ilə davam et */ }
+    }
 
     function setupAutocomplete(inputId, listId, getSuggestions) {
       const input = document.getElementById(inputId);
@@ -2130,19 +2136,31 @@
     }
 
     setupAutocomplete('uni-input', 'uni-input-list', async function (q) {
+      const qLower = q.toLowerCase();
+      // Bakı/Azərbaycan universitetləri lokal siyahıdan ANINDA çıxır (şəbəkə
+      // gecikməsi olmadan), xarici universitetlər isə paralel Hipolabs
+      // sorğusundan gəlir — nəticə birləşdirilib göstərilir.
+      const localMatches = AZ_UNIVERSITIES
+        .filter(function (u) { return u.toLowerCase().indexOf(qLower) !== -1; })
+        .map(function (u) { return { label: u, sub: '🇦🇿 Azərbaycan', value: u }; });
+      let worldMatches = [];
       try {
         const res = await fetch('/api/universities?name=' + encodeURIComponent(q));
         const data = await res.json();
-        return data.map(function (u) { return { label: u.name, sub: u.country, value: u.name }; });
-      } catch (e) { return []; }
+        worldMatches = data
+          .filter(function (u) { return !AZ_UNIVERSITIES.some(function (az) { return az.toLowerCase().indexOf(u.name.toLowerCase()) !== -1; }); })
+          .map(function (u) { return { label: u.name, sub: u.country, value: u.name }; });
+      } catch (e) { /* yalnız lokal nəticələrlə davam et */ }
+      return localMatches.concat(worldMatches).slice(0, 12);
     });
 
     setupAutocomplete('field-select', 'field-select-list', function (q) {
       const qLower = q.toLowerCase();
-      return WORLD_MAJORS.filter(function (m) { return m.toLowerCase().indexOf(qLower) !== -1; })
+      return MAJORS_LIST.filter(function (m) { return m.toLowerCase().indexOf(qLower) !== -1; })
         .slice(0, 10)
         .map(function (m) { return { label: m, value: m }; });
     });
+    loadMajorsFromFirestore();
 
     // 4. Leaflet Europe Map
     let map;

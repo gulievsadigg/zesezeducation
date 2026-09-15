@@ -75,6 +75,13 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Hədəf ixtisas sahələri siyahısı (uyğunlaşdırma formundakı avtomatik
+    // tamamlama üçün) — admin əlavə/silə bilər, sayt üzərində hamı görür.
+    match /majors/{majorId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     // Ölkə Relokasiya Konstruktoru sifarişləri (səbət + endirim + status) —
     // tələbə yalnız öz sifarişini yarada/oxuya bilər, statusu isə (Aktiv/
     // Tamamlandı/qeyd) yalnız admin dəyişə bilər ki, tələbə özünü "tamamlandı"

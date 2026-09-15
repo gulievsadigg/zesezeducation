@@ -138,6 +138,7 @@
           <button class="tab-btn" onclick="switchAdminTab('pane-orders', this)">📦 Sifarişlər</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-packages', this)">💳 Xidmət Paketləri</button>
           <button class="tab-btn" onclick="switchAdminTab('pane-docservices', this)">🌍 Sənədləşmə Xidmətləri</button>
+          <button class="tab-btn" onclick="switchAdminTab('pane-majors', this)">🎓 İxtisaslar</button>
         </nav>
 
         <main>
@@ -204,8 +205,34 @@
               <div class="field-wrap" style="margin-bottom: 0;"><label>Qiymət (AZN)</label><input type="number" id="ds-price" required class="field-input" placeholder="120"></div>
               <button type="submit" class="btn-primary" style="height: 46px;">Əlavə Et</button>
             </form>
+
+            <div style="background: var(--accent-soft-blue); border: 1.5px dashed var(--primary-blue); border-radius: 14px; padding: 16px; margin-bottom: 22px;">
+              <div style="font-weight: 800; color: var(--primary-dark-blue); font-size: 0.9rem; margin-bottom: 6px;">🌱 16 Ölkə üçün Hazır Xidmət Dəsti</div>
+              <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 12px;">
+                Saytdakı bütün hədəf ölkələr (Almaniya, İtaliya, Macarıstan, Polşa, Avstriya, Latviya, Litva, Çexiya,
+                İsveçrə, Niderland, Belçika, İsveç, Finlandiya, İspaniya, Fransa, Estoniya) üçün hər birinə uyğun
+                5 real relokasiya xidməti (qeydiyyat/Anmeldung, sığorta, bank hesabı, sənədlərin tərcümə/apostili,
+                yerli SIM/nömrə) bir kliklə əlavə edir. Artıq mövcud olan ölkələr təkrarlanmır.
+              </p>
+              <button type="button" class="btn-primary" style="background: var(--primary-blue);" onclick="handleSeedDefaultDocServices(this)">🌱 Defolt Xidmətləri Yüklə</button>
+            </div>
+
             <div id="docservices-status" class="status-msg"></div>
             <div id="docservices-list"></div>
+          </div>
+
+          <div id="pane-majors" class="admin-pane card">
+            <h2 style="font-size: 1.3rem; font-weight: 800; color: var(--primary-dark-blue); margin-bottom: 6px;">🎓 Hədəf İxtisas Sahələri</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-bottom: 18px;">
+              Bura əlavə etdiyiniz ixtisaslar saytın baş səhifəsindəki "Hədəf İxtisas Sahəsi" avtomatik-tamamlama
+              siyahısına dərhal əlavə olunur (kod dəyişikliyi tələb olunmur).
+            </p>
+            <form onsubmit="handleAddMajor(event)" style="display: flex; gap: 12px; align-items: end; margin-bottom: 22px;">
+              <div class="field-wrap" style="margin-bottom: 0; flex: 1;"><label>İxtisas Adı</label><input type="text" id="major-name" required class="field-input" placeholder="Məs: Kvant Hesablama"></div>
+              <button type="submit" class="btn-primary" style="height: 46px;">Əlavə Et</button>
+            </form>
+            <div id="majors-status" class="status-msg"></div>
+            <div id="majors-list"></div>
           </div>
         </main>
       </div>
@@ -452,6 +479,129 @@
       }
     }
 
+    // ---- 16 Ölkə üçün Hazır Xidmət Dəsti (bulk seed) ----
+    // Saytda "Planlaşdırdığınız Hədəf Ölkələr" bölməsində göstərilən bütün
+    // ölkələrlə eyni siyahı — hər biri üçün tək-tək form doldurmaq əvəzinə
+    // bir kliklə real, uyğun 5 xidmət əlavə edir. Artıq mövcud olan (ölkə,
+    // xidmət adı) cütləri təkrarlanmır.
+    const DEFAULT_DOC_SERVICE_COUNTRIES = [
+      { key: 'germany', label: '🇩🇪 Almaniya', tier: 'mid' },
+      { key: 'italy', label: '🇮🇹 İtaliya', tier: 'mid' },
+      { key: 'hungary', label: '🇭🇺 Macarıstan', tier: 'low' },
+      { key: 'poland', label: '🇵🇱 Polşa', tier: 'low' },
+      { key: 'austria', label: '🇦🇹 Avstriya', tier: 'high' },
+      { key: 'latvia', label: '🇱🇻 Latviya', tier: 'low' },
+      { key: 'lithuania', label: '🇱🇹 Litva', tier: 'low' },
+      { key: 'czechia', label: '🇨🇿 Çexiya', tier: 'low' },
+      { key: 'switzerland', label: '🇨🇭 İsveçrə', tier: 'high' },
+      { key: 'netherlands', label: '🇳🇱 Niderland', tier: 'high' },
+      { key: 'belgium', label: '🇧🇪 Belçika', tier: 'mid' },
+      { key: 'sweden', label: '🇸🇪 İsveç', tier: 'high' },
+      { key: 'finland', label: '🇫🇮 Finlandiya', tier: 'high' },
+      { key: 'spain', label: '🇪🇸 İspaniya', tier: 'mid' },
+      { key: 'france', label: '🇫🇷 Fransa', tier: 'mid' },
+      { key: 'estonia', label: '🇪🇪 Estoniya', tier: 'low' }
+    ];
+    const DEFAULT_SERVICE_TEMPLATES = [
+      { name: 'Ünvan Qeydiyyatı (Yerli Qeydiyyat)', desc: 'Yaşayış ünvanının bələdiyyədə/yerli qeydiyyat orqanında rəsmiləşdirilməsi (məs. Almaniyada "Anmeldung")' },
+      { name: 'Səhiyyə Sığortası Rəsmiləşdirilməsi', desc: 'Tələbə üçün məcburi tibbi sığortanın seçilib rəsmiləşdirilməsi' },
+      { name: 'Yerli Bank Hesabının Açılması', desc: 'Yaşayış ölkəsində şəxsi bank hesabının açılmasında tam müşayiət' },
+      { name: 'Sənədlərin Tərcüməsi və Apostil Təsdiqi', desc: 'Diplom/attestat və digər sənədlərin rəsmi tərcüməsi və apostil təsdiqinin əldə edilməsi' },
+      { name: 'Yerli SIM Kart və Mobil Operator Qeydiyyatı', desc: 'Yerli nömrənin əldə edilməsi və mobil operatorda qeydiyyat' }
+    ];
+    const TIER_PRICES = { low: [60, 50, 70, 55, 40], mid: [90, 70, 100, 80, 55], high: [120, 95, 140, 100, 70] };
+
+    async function handleSeedDefaultDocServices(btn) {
+      const db = window.ZesezAuth.db;
+      btn.disabled = true;
+      const originalText = btn.innerText;
+      btn.innerText = 'Yüklənir...';
+      try {
+        const existingSnap = await db.collection('doc_services').get();
+        const existingKeys = new Set(existingSnap.docs.map(function (d) {
+          const x = d.data();
+          return (x.country || '') + '::' + (x.name || '');
+        }));
+        const batch = db.batch();
+        let added = 0;
+        DEFAULT_DOC_SERVICE_COUNTRIES.forEach(function (c) {
+          const prices = TIER_PRICES[c.tier];
+          DEFAULT_SERVICE_TEMPLATES.forEach(function (tpl, i) {
+            if (existingKeys.has(c.key + '::' + tpl.name)) return;
+            const ref = db.collection('doc_services').doc();
+            batch.set(ref, {
+              country: c.key,
+              countryLabel: c.label,
+              name: tpl.name,
+              desc: tpl.desc,
+              priceAZN: prices[i],
+              order: Date.now() + i,
+              createdAt: window.ZesezAuth.serverTimestamp()
+            });
+            added++;
+          });
+        });
+        if (!added) {
+          showStatus('docservices-status', 'ℹ️ Bütün ölkələr üçün xidmətlər artıq mövcuddur.', true);
+        } else {
+          await batch.commit();
+          showStatus('docservices-status', '✅ ' + added + ' yeni xidmət əlavə olundu!', true);
+          loadDocServicesAdmin();
+        }
+      } catch (err) {
+        showStatus('docservices-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+      }
+    }
+
+    // ---- Hədəf İxtisas Sahələri (majors/{id}) ----
+    async function loadMajorsAdmin() {
+      const db = window.ZesezAuth.db;
+      const container = document.getElementById('majors-list');
+      try {
+        const snap = await db.collection('majors').orderBy('name', 'asc').get();
+        if (snap.empty) {
+          container.innerHTML = '<p style="font-size:0.85rem;color:var(--text-muted);">Hələ admin panelindən əlavə edilmiş ixtisas yoxdur (saytda hazırkı statik siyahı istifadə olunur).</p>';
+          return;
+        }
+        container.innerHTML = '<div style="display:flex;flex-wrap:wrap;gap:8px;">' +
+          snap.docs.map(function (d) {
+            const x = d.data();
+            return '<span style="display:inline-flex;align-items:center;gap:8px;background:var(--bg-light);border:1px solid var(--border-color);border-radius:50px;padding:6px 8px 6px 14px;font-size:0.82rem;font-weight:600;">' +
+              x.name + '<button onclick="deleteMajor(\'' + d.id + '\')" style="background:#FEE2E2;color:#DC2626;border:none;width:20px;height:20px;border-radius:50%;cursor:pointer;font-weight:800;line-height:1;">×</button></span>';
+          }).join('') + '</div>';
+      } catch (err) {
+        container.innerHTML = '<p style="font-size:0.85rem;color:#B91C1C;">Yüklənmə xətası: ' + window.ZesezAuth.friendlyError(err) + '</p>';
+      }
+    }
+
+    async function handleAddMajor(e) {
+      e.preventDefault();
+      const db = window.ZesezAuth.db;
+      const name = document.getElementById('major-name').value.trim();
+      if (!name) return;
+      try {
+        await db.collection('majors').add({ name: name, createdAt: window.ZesezAuth.serverTimestamp() });
+        document.getElementById('major-name').value = '';
+        showStatus('majors-status', '✅ "' + name + '" əlavə olundu!', true);
+        loadMajorsAdmin();
+      } catch (err) {
+        showStatus('majors-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+      }
+    }
+
+    async function deleteMajor(id) {
+      const db = window.ZesezAuth.db;
+      try {
+        await db.collection('majors').doc(id).delete();
+        loadMajorsAdmin();
+      } catch (err) {
+        showStatus('majors-status', '❌ ' + window.ZesezAuth.friendlyError(err), false);
+      }
+    }
+
     window.ZesezAuth.onAuthChange(async function (user) {
       if (!user) {
         showScreen('login-screen');
@@ -470,6 +620,7 @@
       loadOrdersAdmin();
       loadPackagesEditor();
       loadDocServicesAdmin();
+      loadMajorsAdmin();
     });
   </script>
 </body>
