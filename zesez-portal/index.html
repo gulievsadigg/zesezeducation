@@ -85,6 +85,12 @@
     .brand-name { font-size: 1.25rem; font-weight: 800; color: var(--primary-blue); letter-spacing: -0.3px; line-height: 1.1; }
     .brand-sub { font-size: 0.72rem; font-weight: 700; color: var(--primary-orange); letter-spacing: 0.5px; }
 
+    .header-nav-wrap {
+      display: flex;
+      align-items: center;
+      gap: 28px;
+    }
+
     nav {
       display: flex;
       align-items: center;
@@ -100,6 +106,23 @@
     }
 
     nav a:hover { color: var(--primary-orange); }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mobile-menu-toggle {
+      display: none;
+      background: none;
+      border: none;
+      font-size: 1.7rem;
+      line-height: 1;
+      color: var(--primary-blue);
+      cursor: pointer;
+      padding: 4px 8px;
+    }
 
     .header-btn {
       background: var(--primary-orange);
@@ -412,6 +435,12 @@
       display: flex;
       flex-direction: column;
       gap: 7px;
+      /* Overrides the browser default min-width:auto on grid/flex items —
+         without it, a grid-template-columns:1fr 1fr row (e.g. the reg
+         modal's Ad/Soyad pair) can't shrink an <input> below its intrinsic
+         content width, overflowing narrow phone screens instead of
+         actually splitting the row evenly. */
+      min-width: 0;
     }
 
     .field-box label {
@@ -1215,9 +1244,16 @@
       border-radius: 24px;
       width: 100%;
       max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
       padding: 34px;
       position: relative;
       box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+      box-sizing: border-box;
+    }
+
+    @media (max-width: 560px) {
+      .modal-window { padding: 24px 20px; border-radius: 18px; }
     }
 
     .modal-close-btn {
@@ -1245,10 +1281,35 @@
 
     @media (max-width: 768px) {
       .hero-heading { font-size: 2.2rem; }
-      nav { display: none; }
       .map-banner-overlay { display: none; }
       #europe-leaflet-map { height: 380px; }
       .country-checkboxes-grid { grid-template-columns: repeat(2, 1fr); }
+
+      /* Header collapses into a hamburger — nav + the login/register buttons
+         no longer fit in one row on a phone, so they move into a dropdown
+         panel instead of just disappearing with no way to reach them. */
+      .mobile-menu-toggle { display: flex; align-items: center; justify-content: center; }
+      .header-nav-wrap {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+        background: #FFFFFF;
+        border-bottom: 1px solid var(--border-color);
+        box-shadow: var(--shadow-md);
+        padding: 20px 6% 26px;
+        max-height: calc(100vh - 70px);
+        overflow-y: auto;
+      }
+      .header-nav-wrap.open { display: flex; }
+      .header-nav-wrap nav { flex-direction: column; align-items: flex-start; gap: 14px; }
+      .header-nav-wrap .header-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+      .header-nav-wrap .header-actions .header-btn,
+      .header-nav-wrap .header-actions .btn-blue-outline { width: 100%; text-align: center; box-sizing: border-box; }
     }
   </style>
 </head>
@@ -1277,18 +1338,26 @@
       </div>
     </a>
 
-    <nav>
-      <a href="#search-section">Universitet Axtarışı</a>
-      <a href="#map-section">Avropa Xəritəsi</a>
-      <a href="#packages-section">Paketlər & Qiymətlər</a>
-      <a href="#country-doc-section">Daxili Sənədləşmə</a>
-      <a href="#courses-section">Dil Kursları & Müəllimlər</a>
-    </nav>
+    <!-- Mobile-only hamburger — nav + auth buttons don't fit a phone width
+         side-by-side, so on narrow screens they move into a dropdown panel
+         (#header-nav-wrap) toggled by this button instead of just being
+         hidden with no way to reach them (which is what happened before). -->
+    <button type="button" id="mobile-menu-toggle" class="mobile-menu-toggle" onclick="toggleMobileMenu()" aria-label="Menyu">☰</button>
 
-    <div style="display: flex; align-items: center; gap: 12px;">
-      <div id="auth-header-area"></div>
-      <a href="/dashboard.html" class="btn-blue-outline" style="padding: 9px 20px; font-size: 0.85rem;">🎓 Kabinetim</a>
-      <a href="/partner.html" class="header-btn">🏢 Şirkət Girişi</a>
+    <div id="header-nav-wrap" class="header-nav-wrap">
+      <nav>
+        <a href="#search-section">Universitet Axtarışı</a>
+        <a href="#map-section">Avropa Xəritəsi</a>
+        <a href="#packages-section">Paketlər & Qiymətlər</a>
+        <a href="#country-doc-section">Daxili Sənədləşmə</a>
+        <a href="#courses-section">Dil Kursları & Müəllimlər</a>
+      </nav>
+
+      <div class="header-actions">
+        <div id="auth-header-area"></div>
+        <a href="/dashboard.html" class="btn-blue-outline" style="padding: 9px 20px; font-size: 0.85rem;">🎓 Kabinetim</a>
+        <a href="/partner.html" class="header-btn">🏢 Şirkət Girişi</a>
+      </div>
     </div>
   </header>
 
@@ -1987,6 +2056,21 @@
       document.getElementById('video-iframe').src = '';
       document.getElementById('video-player-modal').style.display = 'none';
     }
+
+    // 2. Mobile Header Menu (hamburger dropdown — see .header-nav-wrap CSS)
+    function toggleMobileMenu() {
+      document.getElementById('header-nav-wrap').classList.toggle('open');
+    }
+    document.addEventListener('click', function (e) {
+      const wrap = document.getElementById('header-nav-wrap');
+      const toggleBtn = document.getElementById('mobile-menu-toggle');
+      if (wrap && wrap.classList.contains('open') && !e.target.closest('#header-nav-wrap') && !e.target.closest('#mobile-menu-toggle')) {
+        wrap.classList.remove('open');
+      }
+    });
+    document.querySelectorAll('#header-nav-wrap nav a').forEach(function (a) {
+      a.addEventListener('click', function () { document.getElementById('header-nav-wrap').classList.remove('open'); });
+    });
 
     // 3. Dynamic Language Scores
     function handleLanguageTypeChange() {

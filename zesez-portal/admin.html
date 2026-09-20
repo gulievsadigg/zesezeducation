@@ -66,9 +66,13 @@
     th { text-align: left; color: var(--text-muted); font-weight: 700; padding: 10px; border-bottom: 2px solid var(--border-color); }
     td { padding: 10px; border-bottom: 1px solid var(--border-color); }
 
-    .field-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    /* min-width:0 overrides the browser default min-width:auto on grid/flex
+       items — without it, a grid-template-columns:1fr 1fr row can't shrink
+       an <input> below its intrinsic content width, causing overflow on
+       narrow phones instead of the columns actually splitting evenly. */
+    .field-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; min-width: 0; }
     .field-wrap label { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark-blue); }
-    .field-input { background: var(--bg-light); border: 1.5px solid var(--border-color); border-radius: 10px; padding: 12px 14px; font-size: 0.9rem; outline: none; }
+    .field-input { background: var(--bg-light); border: 1.5px solid var(--border-color); border-radius: 10px; padding: 12px 14px; font-size: 0.9rem; outline: none; width: 100%; min-width: 0; }
     .btn-primary { background: var(--primary-orange); color: white; border: none; padding: 13px 26px; border-radius: 10px; font-weight: 700; cursor: pointer; font-size: 0.9rem; }
     .btn-primary:hover { background: var(--primary-orange-hover); }
 

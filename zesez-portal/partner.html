@@ -43,10 +43,16 @@
     .container { max-width: 1100px; width: 100%; margin: 40px auto; padding: 0 20px; flex: 1; }
     .card { background: #FFFFFF; border: 1px solid var(--border-color); border-radius: 20px; padding: 32px; box-shadow: var(--shadow-sm); }
 
-    .field-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; }
+    /* min-width:0 overrides the browser default min-width:auto on grid/flex
+       items — without it, a grid-template-columns:1fr 1fr row can't shrink
+       an <input> below its intrinsic content width, so the 2nd column
+       overflows the viewport on narrow phones instead of the columns
+       actually splitting evenly. */
+    .field-wrap { display: flex; flex-direction: column; gap: 6px; margin-bottom: 16px; min-width: 0; }
     .field-wrap label { font-size: 0.85rem; font-weight: 700; color: var(--primary-dark-blue); }
     .field-input {
       background: var(--bg-light); border: 1.5px solid var(--border-color); border-radius: 12px; padding: 13px 16px; font-size: 0.95rem; outline: none;
+      width: 100%; min-width: 0;
     }
     .field-input:focus { border-color: var(--primary-blue); background: #fff; }
     .form-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; }
